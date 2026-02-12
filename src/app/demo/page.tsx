@@ -23,6 +23,11 @@ const demoData: PortfolioData = {
         theme_preference: "modern",
         profile_image: "",
         resume_url: "https://docs.google.com/document/d/1oEAf4BAUeUv-QptuoNsQglzuAtBdF_AZ/edit",
+        primary_color: "#6366f1",
+        secondary_color: "#14b8a6",
+        font_choice: "inter",
+        card_style: "glass",
+        animation_enabled: true,
     },
     experiences: [
         {
