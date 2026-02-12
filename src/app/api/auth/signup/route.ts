@@ -52,6 +52,11 @@ export async function POST(request: NextRequest) {
             graduation_year: "",
             theme_preference: "modern",
             profile_image: "",
+            primary_color: "#6366f1",
+            secondary_color: "#14b8a6",
+            font_choice: "inter",
+            card_style: "glass",
+            animation_enabled: true,
         });
 
         if (!success) {
