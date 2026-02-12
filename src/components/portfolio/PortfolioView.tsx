@@ -1,3 +1,5 @@
+"use client";
+
 import { BackToTop } from "@/components/ui/BackToTop";
 
 import { useState, useEffect } from "react";
