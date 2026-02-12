@@ -48,8 +48,8 @@ export default async function middleware(req: NextRequest) {
         }
     }
 
-    // Special case handling for 'www'
-    if (subdomain === "www") subdomain = "";
+    // Special case handling for 'www' and the app's own subdomain
+    if (subdomain === "www" || subdomain === "myportfolio" || subdomain === "portfolio") subdomain = "";
 
     // If there is a subdomain, rewrite to /[username] path
     if (subdomain && subdomain !== "") {
