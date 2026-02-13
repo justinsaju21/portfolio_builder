@@ -22,6 +22,10 @@ export const UserProfileSchema = z.object({
     font_choice: z.enum(["inter", "playfair", "space_grotesk", "jetbrains"]).default("inter"),
     card_style: z.enum(["glass", "solid", "outline"]).default("glass"),
     animation_enabled: z.boolean().default(true),
+    // Layout Customization
+    section_order: z.string().default("about,skills,experience,projects,leadership,education,contact"),
+    section_visibility: z.string().default(""), // comma-separated list of hidden section IDs
+    custom_sections: z.string().default("[]"), // JSON string of CustomSection[]
 });
 
 export const ExperienceSchema = z.object({
@@ -71,6 +75,17 @@ export const LeadershipSchema = z.object({
     type: z.enum(["club", "academic", "volunteer", "competition"]).default("club"),
 });
 
+// Custom Section Schema
+export const CustomSectionSchema = z.object({
+    id: z.string(),
+    title: z.string().min(1),
+    icon: z.string().default("Star"),
+    type: z.enum(["text", "list", "grid"]).default("text"),
+    content: z.string().default(""),
+    items: z.array(z.string()).default([]),
+    visible: z.boolean().default(true),
+});
+
 // Portfolio Data Types
 export type UserProfile = z.infer<typeof UserProfileSchema>;
 export type Experience = z.infer<typeof ExperienceSchema>;
@@ -78,6 +93,7 @@ export type Project = z.infer<typeof ProjectSchema>;
 export type Skill = z.infer<typeof SkillSchema>;
 export type Education = z.infer<typeof EducationSchema>;
 export type Leadership = z.infer<typeof LeadershipSchema>;
+export type CustomSection = z.infer<typeof CustomSectionSchema>;
 
 export interface PortfolioData {
     profile: UserProfile;
@@ -86,4 +102,7 @@ export interface PortfolioData {
     skills: Skill[];
     education: Education[];
     leadership: Leadership[];
+    customSections: CustomSection[];
+    sectionOrder: string[];
+    hiddenSections: string[];
 }

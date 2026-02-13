@@ -57,6 +57,9 @@ export async function POST(request: NextRequest) {
             font_choice: "inter",
             card_style: "glass",
             animation_enabled: true,
+            section_order: "about,skills,experience,projects,leadership,education,contact",
+            section_visibility: "",
+            custom_sections: "[]",
         });
 
         if (!success) {

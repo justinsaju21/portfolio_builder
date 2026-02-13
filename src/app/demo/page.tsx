@@ -28,6 +28,9 @@ const demoData: PortfolioData = {
         font_choice: "inter",
         card_style: "glass",
         animation_enabled: true,
+        section_order: "about,skills,experience,projects,leadership,education,contact",
+        section_visibility: "",
+        custom_sections: "[]",
     },
     experiences: [
         {
@@ -262,6 +265,9 @@ const demoData: PortfolioData = {
             type: "competition",
         },
     ],
+    customSections: [],
+    sectionOrder: ["about", "skills", "experience", "projects", "leadership", "education", "contact"],
+    hiddenSections: [],
 };
 
 export default function DemoPage() {

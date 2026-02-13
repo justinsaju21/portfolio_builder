@@ -8,6 +8,7 @@ import {
     Skill,
     Education,
     Leadership,
+    CustomSection,
     PortfolioData,
     UserProfileSchema,
     ExperienceSchema,
@@ -15,6 +16,7 @@ import {
     SkillSchema,
     EducationSchema,
     LeadershipSchema,
+    CustomSectionSchema,
 } from "./types";
 
 // Environment variables
@@ -97,6 +99,9 @@ export const getUserByUsername = cache(async (
             font_choice: userRow.get("font_choice") || "inter",
             card_style: userRow.get("card_style") || "glass",
             animation_enabled: userRow.get("animation_enabled")?.toLowerCase() !== "false",
+            section_order: userRow.get("section_order") || "about,skills,experience,projects,leadership,education,contact",
+            section_visibility: userRow.get("section_visibility") || "",
+            custom_sections: userRow.get("custom_sections") || "[]",
         };
 
         // Validate with Zod
@@ -295,6 +300,32 @@ export const getPortfolioData = cache(async (
         getLeadershipByUsername(username),
     ]);
 
+    // Parse custom sections from JSON string
+    let customSections: CustomSection[] = [];
+    try {
+        const parsed = JSON.parse(profile.custom_sections || "[]");
+        if (Array.isArray(parsed)) {
+            for (const s of parsed) {
+                const result = CustomSectionSchema.safeParse(s);
+                if (result.success) {
+                    customSections.push(result.data);
+                }
+            }
+        }
+    } catch { /* ignore parse errors */ }
+
+    // Parse section order
+    const sectionOrder = (profile.section_order || "about,skills,experience,projects,leadership,education,contact")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+
+    // Parse hidden sections
+    const hiddenSections = (profile.section_visibility || "")
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean);
+
     return {
         profile,
         experiences,
@@ -302,6 +333,9 @@ export const getPortfolioData = cache(async (
         skills,
         education,
         leadership,
+        customSections,
+        sectionOrder,
+        hiddenSections,
     };
 });
 
@@ -407,6 +441,9 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
             font_choice: profile.font_choice || "inter",
             card_style: profile.card_style || "glass",
             animation_enabled: profile.animation_enabled !== false ? "true" : "false",
+            section_order: profile.section_order || "about,skills,experience,projects,leadership,education,contact",
+            section_visibility: profile.section_visibility || "",
+            custom_sections: profile.custom_sections || "[]",
         });
 
         return true;
