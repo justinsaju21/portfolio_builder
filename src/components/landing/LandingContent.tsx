@@ -85,6 +85,13 @@ const steps = [
 export function LandingContent() {
     return (
         <div style={{ overflow: "hidden" }}>
+            <style>{`
+                @media (max-width: 768px) {
+                    .landing-features-grid { grid-template-columns: 1fr !important; }
+                    .landing-steps-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+                    .landing-cta-card { padding: 48px 24px !important; }
+                }
+            `}</style>
             {/* ═══════════════ HERO SECTION ═══════════════ */}
             <section
                 style={{
@@ -329,6 +336,7 @@ export function LandingContent() {
 
                     {/* Feature Cards Grid */}
                     <div
+                        className="landing-features-grid"
                         style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
@@ -460,6 +468,7 @@ export function LandingContent() {
 
                     {/* Steps */}
                     <div
+                        className="landing-steps-grid"
                         style={{
                             display: "grid",
                             gridTemplateColumns: "repeat(3, 1fr)",
@@ -532,6 +541,7 @@ export function LandingContent() {
                         initial={{ opacity: 0, scale: 0.96 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         viewport={{ once: true }}
+                        className="landing-cta-card"
                         style={{
                             background: "var(--glass-bg)",
                             backdropFilter: "blur(24px)",

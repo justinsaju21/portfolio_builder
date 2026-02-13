@@ -112,7 +112,7 @@ export function Navbar() {
                             alignItems: "center",
                             gap: "8px",
                         }}
-                        className="hidden md:flex"
+                        className="nav-desktop-links"
                     >
                         {[
                             { href: "#features", label: "Features" },
@@ -153,7 +153,7 @@ export function Navbar() {
                     {/* Mobile Menu Button */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="md:hidden"
+                        className="nav-mobile-btn"
                         style={{
                             padding: "8px",
                             color: "var(--foreground-muted)",
@@ -209,7 +209,7 @@ export function Navbar() {
                                 onClick={() => setIsOpen(false)}
                                 style={{ marginTop: "4px" }}
                             >
-                                <Button className="w-full" size="sm">
+                                <Button size="sm">
                                     Get Started
                                 </Button>
                             </Link>
@@ -217,6 +217,14 @@ export function Navbar() {
                     </motion.div>
                 )}
             </motion.div>
+            <style>{`
+                .nav-desktop-links { display: flex !important; }
+                .nav-mobile-btn { display: none !important; }
+                @media (max-width: 768px) {
+                    .nav-desktop-links { display: none !important; }
+                    .nav-mobile-btn { display: flex !important; }
+                }
+            `}</style>
         </motion.nav>
     );
 }

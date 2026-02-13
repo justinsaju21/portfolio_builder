@@ -36,6 +36,7 @@ export function Footer() {
             >
                 {/* Top Section — 4 columns on desktop */}
                 <div
+                    className="footer-grid"
                     style={{
                         display: "grid",
                         gridTemplateColumns: "2fr 1fr 1fr",
@@ -239,6 +240,14 @@ export function Footer() {
                     </div>
                 </div>
             </div>
+            <style>{`
+                @media (max-width: 768px) {
+                    .footer-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 32px !important;
+                    }
+                }
+            `}</style>
         </footer>
     );
 }
