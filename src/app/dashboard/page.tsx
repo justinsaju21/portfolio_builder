@@ -1050,9 +1050,11 @@ export default function DashboardPage() {
                                                             border: isHidden ? `1px dashed ${glassBorder}` : miniCard.border,
                                                             opacity: isHidden ? 0.6 : 1,
                                                         }}>
-                                                            <GripVertical size={18} style={{ color: fgDim }} />
-                                                            <div style={{ flex: 1 }}>
-                                                                <span style={{ fontWeight: 600, color: fg, fontSize: "0.95rem" }}>{label}</span>
+                                                            <div style={{ padding: "8px 4px", cursor: "grab", touchAction: "none", display: "flex", alignItems: "center" }}>
+                                                                <GripVertical size={18} style={{ color: fgDim }} />
+                                                            </div>
+                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                <span style={{ fontWeight: 600, color: fg, fontSize: "0.95rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "block" }}>{label}</span>
                                                                 {isCustom && <span style={{ marginLeft: 8, fontSize: "0.7rem", padding: "2px 6px", borderRadius: 4, background: `${accent}20`, color: accent }}>Custom</span>}
                                                             </div>
                                                             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -1081,11 +1083,13 @@ export default function DashboardPage() {
                                             {showAddSection && (
                                                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                                     style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-                                                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ ...card, width: "100%", maxWidth: 500, padding: 32 }}>
+                                                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
+                                                        className="responsive-modal-padding"
+                                                        style={{ ...card, width: "100%", maxWidth: 500, padding: 32 }}>
                                                         <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: fg, marginBottom: 24 }}>Add Custom Section</h3>
                                                         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                                                             <Input label="Title" value={newSection.title || ""} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} />
-                                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                                            <div className="responsive-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                                                                 <Select label="Type" value={newSection.type || "text"} onChange={(v) => setNewSection({ ...newSection, type: v as any })}
                                                                     options={[{ value: "text", label: "Rich Text" }, { value: "list", label: "List Items" }, { value: "grid", label: "Grid Items" }]} />
                                                                 <Input label="Icon (e.g. Star, Code)" value={newSection.icon || ""} onChange={(e) => setNewSection({ ...newSection, icon: e.target.value })} />
@@ -1117,6 +1121,9 @@ export default function DashboardPage() {
                     .dashboard-main { margin-left: 0 !important; padding: 12px !important; }
                     .mobile-only-btn { display: flex !important; }
                     .sr-hide-mobile { display: none; }
+                    
+                    .responsive-grid { grid-template-columns: 1fr !important; }
+                    .responsive-modal-padding { padding: 20px !important; }
                 }
                 @media (min-width: 769px) {
                     .mobile-only-btn { display: none !important; }
