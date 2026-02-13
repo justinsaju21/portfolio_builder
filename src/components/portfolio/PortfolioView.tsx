@@ -459,7 +459,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                     {/* Status badge */}
                     <motion.div variants={fadeUp} style={{ marginBottom: "24px" }}>
-                        <span style={{
+                        <span className="pf-hero-pill" style={{
                             ...pill, background: `${accent}10`, border: `1px solid ${accent}20`, color: fgMuted, fontSize: "0.8rem",
                         }}>
                             <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: accent2, display: "inline-block", animation: "pulse 2s infinite" }} />
@@ -511,7 +511,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         gap: "12px", flexWrap: "wrap", marginBottom: "20px",
                     }}>
                         {profile.email && (
-                            <a href={`mailto:${profile.email}`} style={{
+                            <a href={`mailto:${profile.email}`} className="pf-cta-pill" style={{
                                 ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
                             }}>
                                 <Mail size={16} /> {profile.email}
@@ -567,7 +567,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         <motion.h2 variants={fadeUp} style={sectionTitle}>Get to Know Me</motion.h2>
                         <motion.div variants={fadeUp} style={divider} />
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "48px" }}>
+                        <div className="pf-about-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "48px" }}>
                             {/* Bio Card */}
                             <motion.div variants={fadeUp} style={{ ...cardStyle, padding: "32px", gridColumn: profileImg ? "span 1" : "span 2" }} {...cardHover(accent)}>
                                 <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: fg, marginBottom: "16px" }}>👋 Hello, World!</h3>
@@ -653,7 +653,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Expertise</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Skills & Technologies</motion.h2>
                                         <motion.div variants={fadeUp} style={divider} />
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px", marginTop: "48px" }}>
+                                        <div className="pf-skills-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px", marginTop: "48px" }}>
                                             {skills.map((cat) => (
                                                 <motion.div key={cat.category} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
                                                     <h3 style={{ fontSize: "1rem", fontWeight: 700, color: fg, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
@@ -686,7 +686,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Experience</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Where I&apos;ve Worked</motion.h2>
                                         <motion.div variants={fadeUp} style={divider} />
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                        <div className="pf-exp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))", gap: "24px", marginTop: "48px" }}>
                                             {experiences.map((exp, i) => {
                                                 const tc = typeColor(exp.type);
                                                 return (
@@ -747,7 +747,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Portfolio</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Featured Projects</motion.h2>
                                         <motion.div variants={fadeUp} style={divider} />
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                        <div className="pf-projects-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
                                             {projects.map((proj, i) => (
                                                 <motion.div key={`${proj.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px", position: "relative" }} {...cardHover(accent)}>
                                                     {proj.featured && (
@@ -802,7 +802,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Leadership</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Making an Impact</motion.h2>
                                         <motion.div variants={fadeUp} style={divider} />
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                        <div className="pf-leadership-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
                                             {leadership.map((role, i) => {
                                                 const lc = leadershipColor(role.type);
                                                 return (
@@ -851,7 +851,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                         <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "48px", maxWidth: "700px", margin: "48px auto 0" }}>
                                             {education.map((edu, i) => (
                                                 <motion.div key={`${edu.institution}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
-                                                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                                                    <div className="pf-edu-row" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                                                         <div style={{
                                                             padding: "14px", borderRadius: "16px",
                                                             background: `${accent}15`, border: `1px solid ${accent}25`,
@@ -982,7 +982,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                     )}
 
                                     {cs.type === "grid" && (
-                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
+                                        <div className="pf-custom-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
                                             {cs.items.map((item, j) => {
                                                 const isObj = typeof item === "object";
                                                 const text = isObj ? item.title : item;
@@ -1048,6 +1048,18 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                 @keyframes pulse {
                     0%, 100% { opacity: 1; transform: scale(1); }
                     50% { opacity: 0.5; transform: scale(1.3); }
+                }
+                @media (max-width: 768px) {
+                    .pf-about-grid { grid-template-columns: 1fr !important; }
+                    .pf-about-grid > * { grid-column: span 1 !important; }
+                    .pf-skills-grid { grid-template-columns: 1fr !important; }
+                    .pf-exp-grid { grid-template-columns: 1fr !important; }
+                    .pf-projects-grid { grid-template-columns: 1fr !important; }
+                    .pf-leadership-grid { grid-template-columns: 1fr !important; }
+                    .pf-custom-grid { grid-template-columns: 1fr !important; }
+                    .pf-edu-row { flex-wrap: wrap !important; gap: 12px !important; }
+                    .pf-hero-pill { max-width: 100%; text-align: center; word-break: break-word; }
+                    .pf-cta-pill { word-break: break-all; font-size: 0.78rem !important; padding: 8px 14px !important; }
                 }
             `}</style>
         </div>
