@@ -8,13 +8,16 @@ import {
     Sparkles, User, Briefcase, FolderOpen, Code, GraduationCap,
     LogOut, Eye, Download, Save, Menu, X, Trophy, Image as ImageIcon,
     FileText, Check, Plus, Trash2, ChevronDown, ChevronUp, Star, Palette,
+    Layers, GripVertical, Settings, ToggleLeft, ToggleRight, MoreVertical, EyeOff, Pencil,
 } from "lucide-react";
+import { Reorder } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Skeleton, DashboardSkeleton } from "@/components/ui/Skeleton";
+import { CustomSection } from "@/lib/types";
 
 /* ─── TYPES ─── */
-type TabType = "profile" | "experience" | "projects" | "skills" | "education" | "leadership" | "appearance";
+type TabType = "profile" | "experience" | "projects" | "skills" | "education" | "leadership" | "appearance" | "layout";
 
 interface ProfileData {
     full_name: string; tagline: string; bio: string; email: string;
@@ -49,6 +52,7 @@ const tabs: { id: TabType; label: string; icon: React.ElementType }[] = [
     { id: "education", label: "Education", icon: GraduationCap },
     { id: "leadership", label: "Leadership", icon: Trophy },
     { id: "appearance", label: "Appearance", icon: Palette },
+    { id: "layout", label: "Layout", icon: Layers },
 ];
 
 /* ─── STYLE CONSTANTS ─── */
@@ -59,6 +63,16 @@ const glassBorder = "rgba(255,255,255,0.06)";
 const fg = "var(--foreground, #e2e8f0)";
 const fgMuted = "var(--foreground-muted, #94a3b8)";
 const fgDim = "var(--foreground-dim, #64748b)";
+
+const SECTION_LABELS: Record<string, string> = {
+    about: "About",
+    skills: "Skills",
+    experience: "Experience",
+    projects: "Projects",
+    leadership: "Leadership",
+    education: "Education",
+    contact: "Contact",
+};
 
 const card: React.CSSProperties = {
     background: glassBg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
@@ -99,6 +113,9 @@ export default function DashboardPage() {
     const [skills, setSkills] = useState<SkillItem[]>([]);
     const [education, setEducation] = useState<EducationItem[]>([]);
     const [leadership, setLeadership] = useState<LeadershipItem[]>([]);
+    const [sectionOrder, setSectionOrder] = useState<string[]>([]);
+    const [hiddenSections, setHiddenSections] = useState<string[]>([]);
+    const [customSections, setCustomSections] = useState<CustomSection[]>([]);
 
     // Add-new form states
     const [showAddExp, setShowAddExp] = useState(false);
@@ -145,6 +162,9 @@ export default function DashboardPage() {
             setSkills(data.skills || []);
             setEducation(data.education || []);
             setLeadership(data.leadership || []);
+            setSectionOrder(data.sectionOrder || ["about", "skills", "experience", "projects", "leadership", "education", "contact"]);
+            setHiddenSections(data.hiddenSections || []);
+            setCustomSections(data.customSections || []);
         } catch (e) { console.error(e); }
         setLoading(false);
     }, []);
@@ -162,7 +182,12 @@ export default function DashboardPage() {
         try {
             await fetch(`/api/user/${username}`, {
                 method: "PUT", headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(profileData),
+                body: JSON.stringify({
+                    ...profileData,
+                    sectionOrder,
+                    hiddenSections,
+                    customSections,
+                }),
             });
             setSaved(true); setTimeout(() => setSaved(false), 3000);
         } catch (e) { console.error(e); }
@@ -207,6 +232,57 @@ export default function DashboardPage() {
             a.download = `${username}-portfolio-data.json`; a.click();
             URL.revokeObjectURL(url);
         } catch (e) { console.error(e); }
+    };
+
+    /* ─── LAYOUT ACTIONS ─── */
+    const handleToggleVisibility = (id: string) => {
+        if (hiddenSections.includes(id)) {
+            setHiddenSections(hiddenSections.filter(s => s !== id));
+        } else {
+            setHiddenSections([...hiddenSections, id]);
+        }
+    };
+
+    const handleDeleteSection = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this section?")) return;
+        setCustomSections(customSections.filter(s => s.id !== id));
+        setSectionOrder(sectionOrder.filter(s => s !== id));
+        // Note: Actual deletion from DB happens on Save for now, or we can make it immediate.
+        // For custom sections, we should probably delete immediately if we following existing pattern,
+        // but since we are doing a "Save" based workflow for layout, let's keep it local state until Save.
+    };
+
+    /* ─── CUSTOM SECTION MODAL STATE ─── */
+    const [showAddSection, setShowAddSection] = useState(false);
+    const [editId, setEditId] = useState<string | null>(null);
+    const [newSection, setNewSection] = useState<Partial<CustomSection>>({ type: "text", icon: "Star", visible: true });
+
+    const handleEditSection = (section: CustomSection) => {
+        setEditId(section.id);
+        setNewSection({ ...section });
+        setShowAddSection(true);
+    };
+
+    const handleSaveSection = () => {
+        if (editId) {
+            setCustomSections(customSections.map(s => s.id === editId ? { ...s, ...newSection } as CustomSection : s));
+            setEditId(null);
+        } else {
+            const id = `custom-${Date.now()}`;
+            const section: CustomSection = {
+                id,
+                title: newSection.title || "New Section",
+                type: newSection.type as "text" | "list" | "grid" || "text",
+                icon: newSection.icon || "Star",
+                content: newSection.content || "",
+                items: newSection.items || [],
+                visible: true,
+            };
+            setCustomSections([...customSections, section]);
+            setSectionOrder([...sectionOrder, id]);
+        }
+        setShowAddSection(false);
+        setNewSection({ type: "text", icon: "Star", visible: true });
     };
 
     /* ─── LOADING ─── */
@@ -945,6 +1021,87 @@ export default function DashboardPage() {
                                         <p style={{ fontSize: "0.8rem", color: fgDim, textAlign: "center", padding: "8px 0" }}>
                                             💡 Click <strong style={{ color: fg }}>Save</strong> in the top bar to apply your changes to the live portfolio.
                                         </p>
+                                    </div>
+                                )}
+
+                                {/* ═══════ LAYOUT TAB ═══════ */}
+                                {activeTab === "layout" && (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                                        <SectionHeader title="Layout & Visibility" subtitle="Reorder sections and toggle visibility. Add custom sections." />
+
+                                        <div style={card}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
+                                                <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg }}>Sections Order</h3>
+                                                <Button onClick={() => setShowAddSection(true)} size="sm">
+                                                    <Plus size={14} /> Add Custom Section
+                                                </Button>
+                                            </div>
+
+                                            <Reorder.Group axis="y" values={sectionOrder} onReorder={setSectionOrder} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                                {sectionOrder.map((id) => {
+                                                    const isCustom = id.startsWith("custom-");
+                                                    const customSec = customSections.find(s => s.id === id);
+                                                    const label = customSec?.title || SECTION_LABELS[id] || id;
+                                                    const isHidden = hiddenSections.includes(id);
+
+                                                    return (
+                                                        <Reorder.Item key={id} value={id} style={{
+                                                            ...miniCard, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16, cursor: "grab",
+                                                            border: isHidden ? `1px dashed ${glassBorder}` : miniCard.border,
+                                                            opacity: isHidden ? 0.6 : 1,
+                                                        }}>
+                                                            <GripVertical size={18} style={{ color: fgDim }} />
+                                                            <div style={{ flex: 1 }}>
+                                                                <span style={{ fontWeight: 600, color: fg, fontSize: "0.95rem" }}>{label}</span>
+                                                                {isCustom && <span style={{ marginLeft: 8, fontSize: "0.7rem", padding: "2px 6px", borderRadius: 4, background: `${accent}20`, color: accent }}>Custom</span>}
+                                                            </div>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                                <button onClick={() => handleToggleVisibility(id)} style={{ background: "none", border: "none", cursor: "pointer", color: isHidden ? fgDim : accent }}>
+                                                                    {isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                                </button>
+                                                                {isCustom && (
+                                                                    <>
+                                                                        <button onClick={() => handleEditSection(customSec!)} style={{ background: "none", border: "none", cursor: "pointer", color: fgMuted }}>
+                                                                            <Pencil size={18} />
+                                                                        </button>
+                                                                        <button onClick={() => handleDeleteSection(id)} style={{ background: "none", border: "none", cursor: "pointer", color: "#ef4444" }}>
+                                                                            <Trash2 size={18} />
+                                                                        </button>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                        </Reorder.Item>
+                                                    );
+                                                })}
+                                            </Reorder.Group>
+                                        </div>
+
+                                        {/* Add Section Modal (Simple Inline) */}
+                                        <AnimatePresence>
+                                            {showAddSection && (
+                                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                                    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                                                    <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} style={{ ...card, width: "100%", maxWidth: 500, padding: 32 }}>
+                                                        <h3 style={{ fontSize: "1.2rem", fontWeight: 700, color: fg, marginBottom: 24 }}>Add Custom Section</h3>
+                                                        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                                            <Input label="Title" value={newSection.title || ""} onChange={(e) => setNewSection({ ...newSection, title: e.target.value })} />
+                                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                                                                <Select label="Type" value={newSection.type || "text"} onChange={(v) => setNewSection({ ...newSection, type: v as any })}
+                                                                    options={[{ value: "text", label: "Rich Text" }, { value: "list", label: "List Items" }, { value: "grid", label: "Grid Items" }]} />
+                                                                <Input label="Icon (e.g. Star, Code)" value={newSection.icon || ""} onChange={(e) => setNewSection({ ...newSection, icon: e.target.value })} />
+                                                            </div>
+                                                            {newSection.type === "text" && (
+                                                                <Textarea label="Content (Markdown)" value={newSection.content || ""} onChange={(v) => setNewSection({ ...newSection, content: v })} rows={6} />
+                                                            )}
+                                                            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+                                                                <Button onClick={() => { setShowAddSection(false); setEditId(null); setNewSection({ type: "text", icon: "Star", visible: true }); }} variant="secondary" style={{ flex: 1 }}>Cancel</Button>
+                                                                <Button onClick={handleSaveSection} style={{ flex: 1 }}>{editId ? "Save Changes" : "Create Section"}</Button>
+                                                            </div>
+                                                        </div>
+                                                    </motion.div>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
                                 )}
 

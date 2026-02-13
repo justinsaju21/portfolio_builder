@@ -34,6 +34,14 @@ import {
     Layers,
 } from "lucide-react";
 import { PortfolioData, CustomSection as CustomSectionType } from "@/lib/types";
+import ReactMarkdown from "react-markdown";
+
+/* ─── Icon Map for Dynamic Sections ─── */
+const ICON_MAP: Record<string, React.ElementType> = {
+    User, Code, Briefcase, FolderOpen, Trophy, BookOpen, MessageSquare,
+    Star, Heart, Zap, Globe, Award, Users, Layers, Calendar, MapPin,
+    Building2, ExternalLink, GraduationCap, Download, Menu, X, Mail, Github, Linkedin,
+};
 
 /* ─── Animation variants ─── */
 const fadeUp = {
@@ -175,7 +183,8 @@ function buildNavLinks(data: PortfolioData) {
         // Custom section
         const custom = customSections.find(s => s.id === id);
         if (custom && custom.visible) {
-            links.push({ id: custom.id, label: custom.title, icon: Layers });
+            const IconComponent = ICON_MAP[custom.icon] || Layers;
+            links.push({ id: custom.id, label: custom.title, icon: IconComponent });
         }
     }
 
@@ -632,290 +641,288 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
             {/* ═══════ DYNAMIC SECTIONS ═══════ */}
             {(() => {
-                /* ── Section Renderer Map ── */
-                const sectionRenderers: Record<string, () => React.ReactNode> = {
-                    about: () => null, // About is always rendered above (hardcoded hero area)
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                const sectionRenderers = React.useMemo(() => {
+                    const renderers: Record<string, () => React.ReactNode> = {
+                        about: () => null, // About is always rendered above
 
-                    skills: () => skills.length > 0 ? (
-                        <section id="skills" style={{ ...sectionPad, position: "relative" }}>
-                            <div style={container}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Expertise</motion.span>
-                                    <motion.h2 variants={fadeUp} style={sectionTitle}>Skills &amp; Technologies</motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px", marginTop: "48px" }}>
-                                        {skills.map((cat) => (
-                                            <motion.div key={cat.category} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
-                                                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: fg, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
-                                                    <Code size={16} color={accent} />
-                                                    {cat.category}
-                                                </h3>
-                                                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                                                    {cat.skills_list.map(skill => (
-                                                        <span key={skill} style={{
-                                                            padding: "6px 14px", borderRadius: "100px", fontSize: "0.78rem",
-                                                            background: `${accent}10`, border: `1px solid ${accent}20`, color: fgMuted,
-                                                            transition: "all 0.2s ease",
-                                                        }}>
-                                                            {skill}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ) : null,
-
-                    experience: () => experiences.length > 0 ? (
-                        <section id="experience" style={{ ...sectionPad, position: "relative" }}>
-                            <div style={container}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Experience</motion.span>
-                                    <motion.h2 variants={fadeUp} style={sectionTitle}>Where I&apos;ve Worked</motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))", gap: "24px", marginTop: "48px" }}>
-                                        {experiences.map((exp, i) => {
-                                            const tc = typeColor(exp.type);
-                                            return (
-                                                <motion.div key={`${exp.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(tc)}>
-                                                    <div style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}>
-                                                        <div style={{
-                                                            padding: "12px", borderRadius: "14px",
-                                                            background: `${tc}15`, border: `1px solid ${tc}25`, flexShrink: 0,
-                                                        }}>
-                                                            <Briefcase size={20} color={tc} />
-                                                        </div>
-                                                        <div style={{ flex: 1 }}>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
-                                                                <span style={{
-                                                                    padding: "3px 10px", borderRadius: "100px", fontSize: "0.68rem", fontWeight: 600,
-                                                                    background: `${tc}15`, border: `1px solid ${tc}30`, color: tc,
-                                                                    textTransform: "capitalize",
-                                                                }}>{exp.type}</span>
-                                                                <span style={{ fontSize: "0.75rem", color: fgDim }}>
-                                                                    {exp.start_date} — {exp.is_current ? "Present" : exp.end_date}
-                                                                </span>
-                                                            </div>
-                                                            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: fg }}>{exp.title}</h3>
-                                                            <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "4px" }}>
-                                                                <Building2 size={14} color={accent2} />
-                                                                <span style={{ fontSize: "0.85rem", color: accent2 }}>{exp.company}</span>
-                                                                {exp.location && (
-                                                                    <span style={{ fontSize: "0.75rem", color: fgDim, marginLeft: "8px", display: "flex", alignItems: "center", gap: "4px" }}>
-                                                                        <MapPin size={12} /> {exp.location}
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    {exp.description_points.length > 0 && (
-                                                        <ul style={{ paddingLeft: "16px", margin: 0, listStyle: "none" }}>
-                                                            {exp.description_points.map((p, j) => (
-                                                                <li key={j} style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.7, position: "relative", paddingLeft: "16px", marginBottom: "4px" }}>
-                                                                    <span style={{ position: "absolute", left: 0, top: "8px", width: "5px", height: "5px", borderRadius: "50%", background: tc }} />
-                                                                    {p}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
-                                                </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ) : null,
-
-                    projects: () => projects.length > 0 ? (
-                        <section id="projects" style={{ ...sectionPad, position: "relative" }}>
-                            <div style={container}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Portfolio</motion.span>
-                                    <motion.h2 variants={fadeUp} style={sectionTitle}>Featured Projects</motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
-                                        {projects.map((proj, i) => (
-                                            <motion.div key={`${proj.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px", position: "relative" }} {...cardHover(accent)}>
-                                                {proj.featured && (
-                                                    <div style={{ position: "absolute", top: "16px", right: "16px" }}>
-                                                        <Star size={16} fill={accent} color={accent} />
-                                                    </div>
-                                                )}
-                                                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: fg, marginBottom: "12px", paddingRight: proj.featured ? "32px" : "0" }}>
-                                                    {proj.title}
-                                                </h3>
-                                                <p style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.6, marginBottom: "16px" }}>
-                                                    {proj.description}
-                                                </p>
-                                                {proj.tech_stack.length > 0 && (
-                                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
-                                                        {proj.tech_stack.map(t => (
-                                                            <span key={t} style={{
-                                                                padding: "4px 12px", borderRadius: "100px", fontSize: "0.72rem",
-                                                                background: `${accent2}10`, border: `1px solid ${accent2}20`, color: fgMuted,
-                                                            }}>{t}</span>
+                        skills: () => skills.length > 0 ? (
+                            <section id="skills" style={{ ...sectionPad, position: "relative" }}>
+                                <div style={container}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Expertise</motion.span>
+                                        <motion.h2 variants={fadeUp} style={sectionTitle}>Skills & Technologies</motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px", marginTop: "48px" }}>
+                                            {skills.map((cat) => (
+                                                <motion.div key={cat.category} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
+                                                    <h3 style={{ fontSize: "1rem", fontWeight: 700, color: fg, marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                                                        <Code size={16} color={accent} />
+                                                        {cat.category}
+                                                    </h3>
+                                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                                                        {cat.skills_list.map(skill => (
+                                                            <span key={skill} style={{
+                                                                padding: "6px 14px", borderRadius: "100px", fontSize: "0.78rem",
+                                                                background: `${accent}10`, border: `1px solid ${accent}20`, color: fgMuted,
+                                                                transition: "all 0.2s ease",
+                                                            }}>
+                                                                {skill}
+                                                            </span>
                                                         ))}
                                                     </div>
-                                                )}
-                                                <div style={{ display: "flex", gap: "10px" }}>
-                                                    {proj.repo_url && (
-                                                        <a href={proj.repo_url} target="_blank" rel="noopener noreferrer" style={{
-                                                            ...pill, padding: "6px 14px", background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted, fontSize: "0.78rem",
-                                                        }}>
-                                                            <Github size={14} /> Code
-                                                        </a>
-                                                    )}
-                                                    {proj.live_url && (
-                                                        <a href={proj.live_url} target="_blank" rel="noopener noreferrer" style={{
-                                                            ...pill, padding: "6px 14px", background: `${accent}10`, border: `1px solid ${accent}25`, color: accent, fontSize: "0.78rem",
-                                                        }}>
-                                                            <ExternalLink size={14} /> Live Demo
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ) : null,
-
-                    leadership: () => leadership.length > 0 ? (
-                        <section id="leadership" style={{ ...sectionPad, position: "relative" }}>
-                            <div style={container}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Leadership</motion.span>
-                                    <motion.h2 variants={fadeUp} style={sectionTitle}>Making an Impact</motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
-                                        {leadership.map((role, i) => {
-                                            const lc = leadershipColor(role.type);
-                                            return (
-                                                <motion.div key={`${role.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(lc)}>
-                                                    <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "16px" }}>
-                                                        <div style={{
-                                                            padding: "12px", borderRadius: "14px",
-                                                            background: `${lc}15`, border: `1px solid ${lc}25`, flexShrink: 0,
-                                                        }}>
-                                                            {role.type === "club" ? <Zap size={20} color={lc} /> :
-                                                                role.type === "academic" ? <Award size={20} color={lc} /> :
-                                                                    role.type === "volunteer" ? <Heart size={20} color={lc} /> :
-                                                                        <Trophy size={20} color={lc} />}
-                                                        </div>
-                                                        <div>
-                                                            <span style={{
-                                                                padding: "3px 10px", borderRadius: "100px", fontSize: "0.68rem", fontWeight: 600,
-                                                                background: `${lc}15`, border: `1px solid ${lc}30`, color: lc,
-                                                                textTransform: "capitalize", display: "inline-block", marginBottom: "6px",
-                                                            }}>{role.type}</span>
-                                                            <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: fg }}>{role.title}</h3>
-                                                            <p style={{ fontSize: "0.85rem", color: accent2, marginTop: "2px" }}>{role.organization}</p>
-                                                        </div>
-                                                    </div>
-                                                    {role.description && (
-                                                        <p style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.6, marginBottom: "12px" }}>{role.description}</p>
-                                                    )}
-                                                    {role.achievements.length > 0 && (
-                                                        <ul style={{ paddingLeft: "0", margin: 0, listStyle: "none" }}>
-                                                            {role.achievements.map((a, j) => (
-                                                                <li key={j} style={{ color: fgMuted, fontSize: "0.82rem", lineHeight: 1.7, position: "relative", paddingLeft: "16px", marginBottom: "4px" }}>
-                                                                    <span style={{ position: "absolute", left: 0, top: "8px", width: "5px", height: "5px", borderRadius: "50%", background: lc }} />
-                                                                    {a}
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
                                                 </motion.div>
-                                            );
-                                        })}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ) : null,
-
-                    education: () => education.length > 0 ? (
-                        <section id="education" style={{ ...sectionPad, position: "relative" }}>
-                            <div style={container}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Education</motion.span>
-                                    <motion.h2 variants={fadeUp} style={sectionTitle}>Academic Background</motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "48px", maxWidth: "700px", margin: "48px auto 0" }}>
-                                        {education.map((edu, i) => (
-                                            <motion.div key={`${edu.institution}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                                                    <div style={{
-                                                        padding: "14px", borderRadius: "16px",
-                                                        background: `${accent}12`, border: `1px solid ${accent}22`, flexShrink: 0,
-                                                    }}>
-                                                        <GraduationCap size={24} color={accent} />
-                                                    </div>
-                                                    <div style={{ flex: 1 }}>
-                                                        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: fg }}>{edu.degree}</h3>
-                                                        <p style={{ color: fgMuted, fontSize: "0.85rem", marginTop: "2px" }}>{edu.field}</p>
-                                                        <p style={{ color: fgDim, fontSize: "0.8rem", marginTop: "2px" }}>{edu.institution}</p>
-                                                    </div>
-                                                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                                                        <span style={{
-                                                            fontSize: "1rem", fontWeight: 700, color: accent,
-                                                        }}>{edu.is_current ? "Expected" : ""} {edu.year}</span>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ) : null,
-
-                    contact: () => (
-                        <section id="contact" style={{ ...sectionPad, paddingBottom: "60px", position: "relative", minHeight: "60vh", display: "flex", alignItems: "center" }}>
-                            <div style={{ ...container, textAlign: "center", width: "100%" }}>
-                                <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
-                                    <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Get in Touch</motion.span>
-                                    <motion.h2 variants={fadeUp} style={{ ...sectionTitle, fontSize: "clamp(1.8rem, 4vw, 2.8rem)" }}>
-                                        Let&apos;s Connect
-                                    </motion.h2>
-                                    <motion.div variants={fadeUp} style={divider} />
-                                    <motion.p variants={fadeUp} style={{ color: fgMuted, maxWidth: "500px", margin: "24px auto 36px", lineHeight: 1.6 }}>
-                                        I&apos;m always open to new opportunities, collaborations, and conversations.
-                                    </motion.p>
-                                    <motion.div variants={fadeUp} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", flexWrap: "wrap" }}>
-                                        {profile.email && (
-                                            <a href={`mailto:${profile.email}`} style={{
-                                                ...pill, background: `linear-gradient(135deg, ${accent}, ${accent2})`,
-                                                color: "#fff", fontWeight: 600, boxShadow: `0 4px 20px ${accent}30`,
-                                            }}>
-                                                <Mail size={18} /> Email Me
-                                            </a>
-                                        )}
-                                        {profile.linkedin && (
-                                            <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" style={{
-                                                ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
-                                            }}>
-                                                <Linkedin size={18} /> LinkedIn
-                                            </a>
-                                        )}
-                                        {profile.github && (
-                                            <a href={`https://github.com/${profile.github}`} target="_blank" rel="noopener noreferrer" style={{
-                                                ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
-                                            }}>
-                                                <Github size={18} /> GitHub
-                                            </a>
-                                        )}
+                                            ))}
+                                        </div>
                                     </motion.div>
-                                </motion.div>
-                            </div>
-                        </section>
-                    ),
-                };
+                                </div>
+                            </section>
+                        ) : null,
+
+                        experience: () => experiences.length > 0 ? (
+                            <section id="experience" style={{ ...sectionPad, position: "relative" }}>
+                                <div style={container}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Experience</motion.span>
+                                        <motion.h2 variants={fadeUp} style={sectionTitle}>Where I&apos;ve Worked</motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(480px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                            {experiences.map((exp, i) => {
+                                                const tc = typeColor(exp.type);
+                                                return (
+                                                    <motion.div key={`${exp.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(tc)}>
+                                                        <div style={{ display: "flex", alignItems: "flex-start", gap: "16px", marginBottom: "16px" }}>
+                                                            <div style={{
+                                                                padding: "12px", borderRadius: "14px",
+                                                                background: `${tc}15`, border: `1px solid ${tc}25`, flexShrink: 0,
+                                                            }}>
+                                                                <Briefcase size={20} color={tc} />
+                                                            </div>
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
+                                                                    <span style={{
+                                                                        padding: "3px 10px", borderRadius: "100px", fontSize: "0.68rem", fontWeight: 600,
+                                                                        background: `${tc}15`, border: `1px solid ${tc}30`, color: tc,
+                                                                        textTransform: "capitalize",
+                                                                    }}>{exp.type}</span>
+                                                                    <span style={{ fontSize: "0.75rem", color: fgDim }}>
+                                                                        {exp.start_date} — {exp.is_current ? "Present" : exp.end_date}
+                                                                    </span>
+                                                                </div>
+                                                                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: fg }}>{exp.title}</h3>
+                                                                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "4px" }}>
+                                                                    <Building2 size={14} color={accent2} />
+                                                                    <span style={{ fontSize: "0.85rem", color: accent2 }}>{exp.company}</span>
+                                                                    {exp.location && (
+                                                                        <span style={{ fontSize: "0.75rem", color: fgDim, marginLeft: "8px", display: "flex", alignItems: "center", gap: "4px" }}>
+                                                                            <MapPin size={12} /> {exp.location}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {exp.description_points.length > 0 && (
+                                                            <ul style={{ paddingLeft: "16px", margin: 0, listStyle: "none" }}>
+                                                                {exp.description_points.map((p, j) => (
+                                                                    <li key={j} style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.7, position: "relative", paddingLeft: "16px", marginBottom: "4px" }}>
+                                                                        <span style={{ position: "absolute", left: 0, top: "8px", width: "5px", height: "5px", borderRadius: "50%", background: tc }} />
+                                                                        {p}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </section>
+                        ) : null,
+
+                        projects: () => projects.length > 0 ? (
+                            <section id="projects" style={{ ...sectionPad, position: "relative" }}>
+                                <div style={container}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Portfolio</motion.span>
+                                        <motion.h2 variants={fadeUp} style={sectionTitle}>Featured Projects</motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                            {projects.map((proj, i) => (
+                                                <motion.div key={`${proj.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px", position: "relative" }} {...cardHover(accent)}>
+                                                    {proj.featured && (
+                                                        <div style={{ position: "absolute", top: "16px", right: "16px" }}>
+                                                            <Star size={16} fill={accent} color={accent} />
+                                                        </div>
+                                                    )}
+                                                    <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: fg, marginBottom: "12px", paddingRight: proj.featured ? "32px" : "0" }}>
+                                                        {proj.title}
+                                                    </h3>
+                                                    <p style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.6, marginBottom: "16px" }}>
+                                                        {proj.description}
+                                                    </p>
+                                                    {proj.tech_stack.length > 0 && (
+                                                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
+                                                            {proj.tech_stack.map(t => (
+                                                                <span key={t} style={{
+                                                                    padding: "4px 12px", borderRadius: "100px", fontSize: "0.72rem",
+                                                                    background: `${accent2}10`, border: `1px solid ${accent2}20`, color: fgMuted,
+                                                                }}>{t}</span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    <div style={{ display: "flex", gap: "10px" }}>
+                                                        {proj.repo_url && (
+                                                            <a href={proj.repo_url} target="_blank" rel="noopener noreferrer" style={{
+                                                                ...pill, padding: "6px 14px", background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted, fontSize: "0.78rem",
+                                                            }}>
+                                                                <Github size={14} /> Code
+                                                            </a>
+                                                        )}
+                                                        {proj.live_url && (
+                                                            <a href={proj.live_url} target="_blank" rel="noopener noreferrer" style={{
+                                                                ...pill, padding: "6px 14px", background: `${accent}10`, border: `1px solid ${accent}25`, color: accent, fontSize: "0.78rem",
+                                                            }}>
+                                                                <ExternalLink size={14} /> Live Demo
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </section>
+                        ) : null,
+
+                        leadership: () => leadership.length > 0 ? (
+                            <section id="leadership" style={{ ...sectionPad, position: "relative" }}>
+                                <div style={container}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Leadership</motion.span>
+                                        <motion.h2 variants={fadeUp} style={sectionTitle}>Making an Impact</motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "24px", marginTop: "48px" }}>
+                                            {leadership.map((role, i) => {
+                                                const lc = leadershipColor(role.type);
+                                                return (
+                                                    <motion.div key={`${role.title}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(lc)}>
+                                                        <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "16px" }}>
+                                                            <div style={{
+                                                                padding: "12px", borderRadius: "14px",
+                                                                background: `${lc}15`, border: `1px solid ${lc}25`, flexShrink: 0,
+                                                            }}>
+                                                                <Trophy size={20} color={lc} />
+                                                            </div>
+                                                            <div>
+                                                                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: fg }}>{role.title}</h3>
+                                                                <p style={{ fontSize: "0.9rem", color: lc, fontWeight: 500, margin: "2px 0 6px" }}>{role.organization}</p>
+                                                            </div>
+                                                        </div>
+                                                        <p style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.6, marginBottom: "12px" }}>
+                                                            {role.description}
+                                                        </p>
+                                                        {role.achievements.length > 0 && (
+                                                            <ul style={{ paddingLeft: "16px", margin: 0, listStyle: "none" }}>
+                                                                {role.achievements.map((a, j) => (
+                                                                    <li key={j} style={{ color: fgMuted, fontSize: "0.8rem", lineHeight: 1.6, position: "relative", paddingLeft: "12px", marginBottom: "4px" }}>
+                                                                        <span style={{ position: "absolute", left: 0, top: "7px", width: "4px", height: "4px", borderRadius: "50%", background: lc }} />
+                                                                        {a}
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        )}
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </section>
+                        ) : null,
+
+                        education: () => education.length > 0 ? (
+                            <section id="education" style={{ ...sectionPad, position: "relative" }}>
+                                <div style={container}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Education</motion.span>
+                                        <motion.h2 variants={fadeUp} style={sectionTitle}>Academic Background</motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "48px", maxWidth: "700px", margin: "48px auto 0" }}>
+                                            {education.map((edu, i) => (
+                                                <motion.div key={`${edu.institution}-${i}`} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }} {...cardHover(accent)}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                                                        <div style={{
+                                                            padding: "14px", borderRadius: "16px",
+                                                            background: `${accent}15`, border: `1px solid ${accent}25`,
+                                                        }}>
+                                                            <GraduationCap size={24} color={accent} />
+                                                        </div>
+                                                        <div style={{ flex: 1 }}>
+                                                            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: fg }}>{edu.institution}</h3>
+                                                            <p style={{ fontSize: "0.95rem", color: fgMuted, marginTop: "2px" }}>{edu.degree} in {edu.field}</p>
+                                                        </div>
+                                                        <div style={{ textAlign: "right" }}>
+                                                            <span style={{
+                                                                padding: "6px 12px", borderRadius: "8px", fontSize: "0.85rem", fontWeight: 600,
+                                                                background: glassBg, border: `1px solid ${glassBorder}`, color: fg,
+                                                            }}>
+                                                                {edu.year}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </motion.div>
+                                </div>
+                            </section>
+                        ) : null,
+
+                        contact: () => (
+                            <section id="contact" style={{ ...sectionPad, paddingBottom: "60px", position: "relative", minHeight: "60vh", display: "flex", alignItems: "center" }}>
+                                <div style={{ ...container, textAlign: "center", width: "100%" }}>
+                                    <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
+                                        <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Get in Touch</motion.span>
+                                        <motion.h2 variants={fadeUp} style={{ ...sectionTitle, fontSize: "clamp(1.8rem, 4vw, 2.8rem)" }}>
+                                            Let&apos;s Connect
+                                        </motion.h2>
+                                        <motion.div variants={fadeUp} style={divider} />
+                                        <motion.p variants={fadeUp} style={{ color: fgMuted, maxWidth: "500px", margin: "24px auto 36px", lineHeight: 1.6 }}>
+                                            I&apos;m always open to new opportunities, collaborations, and conversations.
+                                        </motion.p>
+                                        <motion.div variants={fadeUp} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px", flexWrap: "wrap" }}>
+                                            {profile.email && (
+                                                <a href={`mailto:${profile.email}`} style={{
+                                                    ...pill, background: `linear-gradient(135deg, ${accent}, ${accent2})`,
+                                                    color: "#fff", fontWeight: 600, padding: "12px 28px", fontSize: "1rem",
+                                                    boxShadow: `0 8px 30px ${accent}40`,
+                                                }}>
+                                                    <Mail size={18} /> Say Hello
+                                                </a>
+                                            )}
+                                            {profile.linkedin && (
+                                                <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" style={{
+                                                    ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fg, padding: "12px 28px", fontSize: "1rem",
+                                                }}>
+                                                    <Linkedin size={18} /> LinkedIn
+                                                </a>
+                                            )}
+                                            {profile.github && (
+                                                <a href={`https://github.com/${profile.github}`} target="_blank" rel="noopener noreferrer" style={{
+                                                    ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fg, padding: "12px 28px", fontSize: "1rem",
+                                                }}>
+                                                    <Github size={18} /> GitHub
+                                                </a>
+                                            )}
+                                        </motion.div>
+                                    </motion.div>
+                                </div>
+                            </section>
+                        ),
+                    };
+                    return renderers;
+                }, [skills, experiences, projects, leadership, education, profile, accent, accent2, fg, fgMuted, fgDim, sectionPad, sectionLabel, sectionTitle, cardStyle, divider, typeColor, leadershipColor, glassBg, glassBorder, pill]);
 
                 /* ── Custom Section Renderer ── */
                 const renderCustomSection = (cs: CustomSectionType) => (
@@ -930,33 +937,71 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                                 <div style={{ marginTop: "48px" }}>
                                     {cs.type === "text" && (
-                                        <motion.div variants={fadeUp} style={{ ...cardStyle, padding: "32px" }} {...cardHover(accent)}>
-                                            <div style={{ color: fgMuted, fontSize: "0.95rem", lineHeight: 1.8, whiteSpace: "pre-wrap" }}>
+                                        <motion.div variants={fadeUp} style={{ ...cardStyle, padding: "32px", fontSize: "1rem", color: fgMuted, lineHeight: 1.8 }} {...cardHover(accent)}>
+                                            <ReactMarkdown
+                                                components={{
+                                                    a: ({ ...props }) => <a {...props} style={{ color: accent, textDecoration: "underline" }} target="_blank" rel="noreferrer" />,
+                                                    h3: ({ ...props }) => <h3 {...props} style={{ color: fg, fontSize: "1.2rem", fontWeight: 700, margin: "24px 0 16px" }} />,
+                                                    ul: ({ ...props }) => <ul {...props} style={{ paddingLeft: "20px", margin: "16px 0" }} />,
+                                                    li: ({ ...props }) => <li {...props} style={{ marginBottom: "8px" }} />,
+                                                    p: ({ ...props }) => <p {...props} style={{ marginBottom: "16px" }} />,
+                                                }}
+                                            >
                                                 {cs.content}
-                                            </div>
+                                            </ReactMarkdown>
                                         </motion.div>
                                     )}
 
                                     {cs.type === "list" && (
                                         <motion.div variants={fadeUp} style={{ ...cardStyle, padding: "32px" }} {...cardHover(accent)}>
                                             <ul style={{ paddingLeft: "0", margin: 0, listStyle: "none" }}>
-                                                {cs.items.map((item, j) => (
-                                                    <li key={j} style={{ color: fgMuted, fontSize: "0.9rem", lineHeight: 1.8, position: "relative", paddingLeft: "20px", marginBottom: "6px" }}>
-                                                        <span style={{ position: "absolute", left: 0, top: "10px", width: "6px", height: "6px", borderRadius: "50%", background: accent }} />
-                                                        {item}
-                                                    </li>
-                                                ))}
+                                                {cs.items.map((item, j) => {
+                                                    const isObj = typeof item === "object";
+                                                    const text = isObj ? item.title : item;
+                                                    const desc = isObj ? item.description : null;
+                                                    const url = isObj ? item.url : null;
+
+                                                    return (
+                                                        <li key={j} style={{ color: fgMuted, fontSize: "0.95rem", lineHeight: 1.8, position: "relative", paddingLeft: "24px", marginBottom: "16px" }}>
+                                                            <span style={{ position: "absolute", left: 0, top: "10px", width: "6px", height: "6px", borderRadius: "50%", background: accent }} />
+                                                            {url ? (
+                                                                <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: accent, fontWeight: 500, textDecoration: "none" }}>
+                                                                    {text}
+                                                                </a>
+                                                            ) : (
+                                                                <span style={{ color: fg, fontWeight: 500 }}>{text}</span>
+                                                            )}
+                                                            {desc && (
+                                                                <p style={{ margin: "4px 0 0", fontSize: "0.85rem", opacity: 0.8 }}>{desc}</p>
+                                                            )}
+                                                        </li>
+                                                    );
+                                                })}
                                             </ul>
                                         </motion.div>
                                     )}
 
                                     {cs.type === "grid" && (
                                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-                                            {cs.items.map((item, j) => (
-                                                <motion.div key={j} variants={fadeUp} style={{ ...cardStyle, padding: "24px", textAlign: "center" }} {...cardHover(accent)}>
-                                                    <span style={{ color: fgMuted, fontSize: "0.9rem" }}>{item}</span>
-                                                </motion.div>
-                                            ))}
+                                            {cs.items.map((item, j) => {
+                                                const isObj = typeof item === "object";
+                                                const text = isObj ? item.title : item;
+                                                const desc = isObj ? item.description : null;
+                                                const url = isObj ? item.url : null;
+
+                                                return (
+                                                    <motion.div key={j} variants={fadeUp} style={{ ...cardStyle, padding: "24px", textAlign: "left" }} {...cardHover(accent)}>
+                                                        {url ? (
+                                                            <a href={url} target="_blank" rel="noopener noreferrer" style={{ display: "block", textDecoration: "none" }}>
+                                                                <h4 style={{ color: accent, fontSize: "1.05rem", fontWeight: 700, marginBottom: desc ? "8px" : "0" }}>{text} <ExternalLink size={12} style={{ verticalAlign: "middle" }} /></h4>
+                                                            </a>
+                                                        ) : (
+                                                            <h4 style={{ color: fg, fontSize: "1.05rem", fontWeight: 700, marginBottom: desc ? "8px" : "0" }}>{text}</h4>
+                                                        )}
+                                                        {desc && <p style={{ color: fgMuted, fontSize: "0.85rem", lineHeight: 1.6 }}>{desc}</p>}
+                                                    </motion.div>
+                                                );
+                                            })}
                                         </div>
                                     )}
                                 </div>
@@ -965,21 +1010,23 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                     </section>
                 );
 
-                /* ── Render sections in order ── */
-                return sectionOrder
-                    .filter(id => !hiddenSections.includes(id))
-                    .map(id => {
-                        // Built-in section
-                        if (sectionRenderers[id]) {
-                            return <React.Fragment key={id}>{sectionRenderers[id]()}</React.Fragment>;
-                        }
-                        // Custom section
-                        const cs = customSections.find(s => s.id === id);
-                        if (cs && cs.visible) {
-                            return renderCustomSection(cs);
-                        }
-                        return null;
-                    });
+                // Main render loop
+                return sectionOrder.map(id => {
+                    if (hiddenSections.includes(id)) return null;
+
+                    // 1. Built-in section?
+                    if (sectionRenderers[id]) {
+                        return <React.Fragment key={id}>{sectionRenderers[id]()}</React.Fragment>;
+                    }
+
+                    // 2. Custom section?
+                    const custom = customSections.find(s => s.id === id);
+                    if (custom && custom.visible) {
+                        return <React.Fragment key={id}>{renderCustomSection(custom)}</React.Fragment>;
+                    }
+
+                    return null;
+                });
             })()}
 
             {/* ─── FOOTER ─── */}

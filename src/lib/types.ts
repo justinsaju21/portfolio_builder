@@ -76,13 +76,20 @@ export const LeadershipSchema = z.object({
 });
 
 // Custom Section Schema
+const CustomItemSchema = z.object({
+    title: z.string().min(1),
+    description: z.string().optional(),
+    url: z.string().optional(),
+});
+
+// Custom Section Schema
 export const CustomSectionSchema = z.object({
     id: z.string(),
     title: z.string().min(1),
     icon: z.string().default("Star"),
     type: z.enum(["text", "list", "grid"]).default("text"),
-    content: z.string().default(""),
-    items: z.array(z.string()).default([]),
+    content: z.string().default(""), // Markdown supported
+    items: z.array(z.union([z.string(), CustomItemSchema])).default([]),
     visible: z.boolean().default(true),
 });
 
