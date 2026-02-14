@@ -41,6 +41,7 @@ const demoData: PortfolioData = {
         button_style: "solid",
         container_width: "normal",
         custom_css: "",
+        color_theme: "dark",
     },
     experiences: [
         {

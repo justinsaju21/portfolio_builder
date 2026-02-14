@@ -32,6 +32,8 @@ import {
     Globe,
     Heart,
     Layers,
+    Sun,
+    Moon,
 } from "lucide-react";
 import { PortfolioData, CustomSection as CustomSectionType } from "@/lib/types";
 import ReactMarkdown from "react-markdown";
@@ -142,22 +144,75 @@ function getButtonStyle(style: string, accent: string): React.CSSProperties {
     }
 }
 
-function getCardStyle(style: string, accent: string): React.CSSProperties {
+const THEMES: Record<string, any> = {
+    light: {
+        bg: "#ffffff",
+        surface: "#f8fafc",
+        textPrimary: "#0f172a",
+        textMuted: "#475569",
+        textDim: "#94a3b8",
+        glassBg: "rgba(15, 23, 42, 0.03)",
+        glassBorder: "rgba(15, 23, 42, 0.08)",
+        cardBg: "#ffffff",
+    },
+    dark: {
+        bg: "#030310",
+        surface: "rgba(255,255,255,0.03)",
+        textPrimary: "#e2e8f0",
+        textMuted: "#94a3b8",
+        textDim: "#64748b",
+        glassBg: "rgba(255,255,255,0.03)",
+        glassBorder: "rgba(255,255,255,0.06)",
+        cardBg: "rgba(20,20,40,0.92)",
+    },
+    midnight: {
+        bg: "#020617",
+        surface: "#0f172a",
+        textPrimary: "#f8fafc",
+        textMuted: "#94a3b8",
+        textDim: "#64748b",
+        glassBg: "rgba(30, 41, 59, 0.4)",
+        glassBorder: "rgba(51, 65, 85, 0.5)",
+        cardBg: "#0f172a",
+    },
+    sunset: {
+        bg: "#1a0b1c",
+        surface: "#2d1b2e",
+        textPrimary: "#fae8ff",
+        textMuted: "#d8b4fe",
+        textDim: "#a855f7",
+        glassBg: "rgba(88, 28, 135, 0.1)",
+        glassBorder: "rgba(168, 85, 247, 0.2)",
+        cardBg: "#2d1b2e",
+    },
+    glass: {
+        bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
+        surface: "rgba(255,255,255,0.05)",
+        textPrimary: "#ffffff",
+        textMuted: "#cbd5e1",
+        textDim: "#94a3b8",
+        glassBg: "rgba(255,255,255,0.03)",
+        glassBorder: "rgba(255,255,255,0.1)",
+        cardBg: "rgba(255,255,255,0.02)",
+    }
+};
+
+function getCardStyle(style: string, theme: any): React.CSSProperties {
     switch (style) {
         case "solid":
             return {
-                background: "rgba(20,20,40,0.92)", border: `1px solid rgba(255,255,255,0.06)`,
+                background: theme.cardBg, border: `1px solid ${theme.glassBorder}`,
                 borderRadius: "20px", transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
             };
         case "outline":
             return {
-                background: "transparent", border: `2px solid rgba(255,255,255,0.1)`,
+                background: "transparent", border: `2px solid ${theme.glassBorder}`,
                 borderRadius: "20px", transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
             };
         default: // glass
             return {
-                background: glassBg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
-                border: `1px solid ${glassBorder}`, borderRadius: "20px",
+                background: theme.glassBg, backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)",
+                border: `1px solid ${theme.glassBorder}`, borderRadius: "20px",
                 transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
             };
     }
@@ -225,7 +280,11 @@ function buildNavLinks(data: PortfolioData) {
 /* ═══════════════════════════════════════════════════════════
    PORTFOLIO NAVBAR
    ═══════════════════════════════════════════════════════════ */
-function PortfolioNavbar({ data }: { data: PortfolioData }) {
+function PortfolioNavbar({ data, currentTheme, onToggleTheme }: {
+    data: PortfolioData;
+    currentTheme: string;
+    onToggleTheme: () => void;
+}) {
     const [scrolled, setScrolled] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("");
@@ -350,16 +409,40 @@ function PortfolioNavbar({ data }: { data: PortfolioData }) {
                                 </button>
                             );
                         })}
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={onToggleTheme}
+                            style={{
+                                background: "none", border: "none", cursor: "pointer",
+                                padding: "8px", color: scrolled ? fgMuted : fg,
+                                borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center",
+                                transition: "all 0.2s ease"
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.color = accent}
+                            onMouseLeave={e => e.currentTarget.style.color = scrolled ? fgMuted : fg}
+                            title="Switch Theme"
+                        >
+                            {currentTheme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+                        </button>
                     </div>
 
                     {/* Mobile menu button */}
-                    <button
-                        onClick={() => setMobileOpen(!mobileOpen)}
-                        style={{ background: "none", border: "none", cursor: "pointer", color: fg, padding: "8px" }}
-                        className="mobile-menu-btn"
-                    >
-                        {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <button
+                            onClick={onToggleTheme}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: fg, padding: "8px", display: "none" }}
+                            className="mobile-theme-btn"
+                        >
+                            {currentTheme === "light" ? <Moon size={20} /> : <Sun size={20} />}
+                        </button>
+                        <button
+                            onClick={() => setMobileOpen(!mobileOpen)}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: fg, padding: "8px" }}
+                            className="mobile-menu-btn"
+                        >
+                            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+                        </button>
+                    </div>
                 </nav>
             </motion.div>
 
@@ -404,8 +487,10 @@ function PortfolioNavbar({ data }: { data: PortfolioData }) {
             {/* Responsive CSS for mobile */}
             <style>{`
                 .mobile-menu-btn { display: none !important; }
+                .mobile-theme-btn { display: none !important; }
                 @media (max-width: 768px) {
                     .mobile-menu-btn { display: flex !important; }
+                    .mobile-theme-btn { display: flex !important; }
                     .desktop-nav-links { display: none !important; }
                 }
             `}</style>
@@ -420,9 +505,19 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const { profile, experiences, projects, skills, education, leadership, customSections, sectionOrder, hiddenSections } = data;
     const profileImg = getImageUrl(profile.profile_image);
 
+    // Theme Management
+    const [currentTheme, setCurrentTheme] = useState<string>(profile.color_theme || "dark");
+    const theme = THEMES[currentTheme] || THEMES.dark;
+
+    const toggleTheme = () => {
+        const themeList = Object.keys(THEMES);
+        const nextIndex = (themeList.indexOf(currentTheme) + 1) % themeList.length;
+        setCurrentTheme(themeList[nextIndex]);
+    };
+
     const accent = profile.primary_color || "#818cf8";
     const accent2 = profile.secondary_color || "#14b8a6";
-    const cardStyle = getCardStyle(profile.card_style || "glass", accent);
+    const cardStyle = getCardStyle(profile.card_style || "glass", theme);
     const buttonStyle = getButtonStyle(profile.button_style || "solid", accent);
     const animEnabled = profile.animation_enabled !== false;
     const divider = dividerLine(accent, accent2);
@@ -432,11 +527,13 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const headingFontUrl = FONT_URLS[profile.heading_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
     const bodyFontUrl = FONT_URLS[profile.body_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
 
-    const bg = profile.bg_color || "#030310";
-    const surface = profile.surface_color || "rgba(255,255,255,0.03)";
-    const textPrimary = profile.text_primary || "#e2e8f0";
-    const textMuted = profile.text_muted || "#94a3b8";
-    const textDim = profile.text_dim || "#64748b";
+    const bg = theme.bg;
+    const surface = theme.surface;
+    const textPrimary = theme.textPrimary;
+    const textMuted = theme.textMuted;
+    const textDim = theme.textDim;
+    const glassBgVar = theme.glassBg;
+    const glassBorderVar = theme.glassBorder;
 
     const containerMaxWidth = profile.container_width === "narrow" ? "768px" : profile.container_width === "wide" ? "1200px" : "1100px";
 
@@ -483,19 +580,21 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                     --foreground: ${textPrimary};
                     --foreground-muted: ${textMuted};
                     --foreground-dim: ${textDim};
+                    --glass-bg: ${glassBgVar};
+                    --glass-border: ${glassBorderVar};
                     --accent: ${accent};
                     --accent2: ${accent2};
                     --heading-font: ${headingFont};
                     --body-font: ${bodyFont};
                 }
                 h1, h2, h3, h4, .section-title, .hero-title { font-family: var(--heading-font) !important; }
-                body { font-family: var(--body-font); }
+                body { font-family: var(--body-font); background: var(--background); color: var(--foreground); }
                 .portfolio-container { max-width: ${containerMaxWidth} !important; }
                 ${profile.custom_css || ""}
                 `
             }} />
 
-            <PortfolioNavbar data={data} />
+            <PortfolioNavbar data={data} currentTheme={currentTheme} onToggleTheme={toggleTheme} />
 
             {/* ─── HERO ─── */}
             <section style={{

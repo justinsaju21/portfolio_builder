@@ -113,6 +113,7 @@ export const getUserByUsername = cache(async (
             button_style: userRow.get("button_style") || "solid",
             container_width: userRow.get("container_width") || "normal",
             custom_css: userRow.get("custom_css") || "",
+            color_theme: userRow.get("color_theme") || "dark",
         };
 
         // Validate with Zod
@@ -465,6 +466,7 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
             button_style: profile.button_style || "solid",
             container_width: profile.container_width || "normal",
             custom_css: profile.custom_css || "",
+            color_theme: profile.color_theme || "dark",
         });
 
         return true;

@@ -37,6 +37,7 @@ export const UserProfileSchema = z.object({
     button_style: z.enum(["solid", "outline", "ghost"]).default("solid"),
     container_width: z.enum(["narrow", "normal", "wide"]).default("normal"),
     custom_css: z.string().default(""),
+    color_theme: z.enum(["light", "dark", "midnight", "glass", "sunset"]).default("dark"),
 });
 
 export const ExperienceSchema = z.object({
