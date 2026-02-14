@@ -102,6 +102,17 @@ export const getUserByUsername = cache(async (
             section_order: userRow.get("section_order") || "about,skills,experience,projects,leadership,education,contact",
             section_visibility: userRow.get("section_visibility") || "",
             custom_sections: userRow.get("custom_sections") || "[]",
+            // New Customization Fields
+            bg_color: userRow.get("bg_color") || "#ffffff",
+            surface_color: userRow.get("surface_color") || "#f8fafc",
+            text_primary: userRow.get("text_primary") || "#0f172a",
+            text_muted: userRow.get("text_muted") || "#475569",
+            text_dim: userRow.get("text_dim") || "#94a3b8",
+            heading_font: userRow.get("heading_font") || "Inter",
+            body_font: userRow.get("body_font") || "Inter",
+            button_style: userRow.get("button_style") || "solid",
+            container_width: userRow.get("container_width") || "normal",
+            custom_css: userRow.get("custom_css") || "",
         };
 
         // Validate with Zod
@@ -444,6 +455,16 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
             section_order: profile.section_order || "about,skills,experience,projects,leadership,education,contact",
             section_visibility: profile.section_visibility || "",
             custom_sections: profile.custom_sections || "[]",
+            bg_color: profile.bg_color || "#ffffff",
+            surface_color: profile.surface_color || "#f8fafc",
+            text_primary: profile.text_primary || "#0f172a",
+            text_muted: profile.text_muted || "#475569",
+            text_dim: profile.text_dim || "#94a3b8",
+            heading_font: profile.heading_font || "Inter",
+            body_font: profile.body_font || "Inter",
+            button_style: profile.button_style || "solid",
+            container_width: profile.container_width || "normal",
+            custom_css: profile.custom_css || "",
         });
 
         return true;

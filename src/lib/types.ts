@@ -26,6 +26,17 @@ export const UserProfileSchema = z.object({
     section_order: z.string().default("about,skills,experience,projects,leadership,education,contact"),
     section_visibility: z.string().default(""), // comma-separated list of hidden section IDs
     custom_sections: z.string().default("[]"), // JSON string of CustomSection[]
+    // Granular Styling
+    bg_color: z.string().default("#ffffff"),
+    surface_color: z.string().default("#f8fafc"),
+    text_primary: z.string().default("#0f172a"),
+    text_muted: z.string().default("#475569"),
+    text_dim: z.string().default("#94a3b8"),
+    heading_font: z.string().default("Inter"),
+    body_font: z.string().default("Inter"),
+    button_style: z.enum(["solid", "outline", "ghost"]).default("solid"),
+    container_width: z.enum(["narrow", "normal", "wide"]).default("normal"),
+    custom_css: z.string().default(""),
 });
 
 export const ExperienceSchema = z.object({

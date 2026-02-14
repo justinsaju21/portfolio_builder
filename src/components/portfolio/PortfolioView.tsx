@@ -76,12 +76,12 @@ const card: React.CSSProperties = {
     transition: "transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease",
 };
 const cardHover = (color: string) => ({
-    onMouseEnter: (e: React.MouseEvent<HTMLDivElement>) => {
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
         e.currentTarget.style.transform = "translateY(-4px)";
         e.currentTarget.style.boxShadow = `0 12px 40px ${color}15`;
         e.currentTarget.style.borderColor = `${color}30`;
     },
-    onMouseLeave: (e: React.MouseEvent<HTMLDivElement>) => {
+    onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
         e.currentTarget.style.transform = "translateY(0)";
         e.currentTarget.style.boxShadow = "none";
         e.currentTarget.style.borderColor = glassBorder;
@@ -103,13 +103,44 @@ const FONT_MAP: Record<string, string> = {
     playfair: "'Playfair Display', serif",
     space_grotesk: "'Space Grotesk', sans-serif",
     jetbrains: "'JetBrains Mono', monospace",
+    outfit: "'Outfit', sans-serif",
+    roboto: "'Roboto', sans-serif",
+    "open sans": "'Open Sans', sans-serif",
+    lora: "'Lora', serif",
+    "dm serif display": "'DM Serif Display', serif",
 };
 const FONT_URLS: Record<string, string> = {
     inter: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap",
     playfair: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap",
     space_grotesk: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap",
     jetbrains: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&display=swap",
+    outfit: "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap",
+    roboto: "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
+    "open sans": "https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap",
+    lora: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap",
+    "dm serif display": "https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&display=swap",
 };
+
+function getButtonStyle(style: string, accent: string): React.CSSProperties {
+    switch (style) {
+        case "outline":
+            return {
+                background: "transparent", border: `2px solid ${accent}`, borderRadius: "100px",
+                color: accent, fontWeight: 600, transition: "all 0.3s ease",
+            };
+        case "ghost":
+            return {
+                background: "transparent", border: "none", borderRadius: "100px",
+                color: accent, fontWeight: 600, transition: "all 0.3s ease",
+            };
+        default: // solid
+            return {
+                background: accent, border: "none", borderRadius: "100px",
+                color: "white", fontWeight: 600, boxShadow: `0 8px 24px ${accent}40`,
+                transition: "all 0.3s ease",
+            };
+    }
+}
 
 function getCardStyle(style: string, accent: string): React.CSSProperties {
     switch (style) {
@@ -389,14 +420,25 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const { profile, experiences, projects, skills, education, leadership, customSections, sectionOrder, hiddenSections } = data;
     const profileImg = getImageUrl(profile.profile_image);
 
-    // Dynamic UI from profile settings
     const accent = profile.primary_color || "#818cf8";
     const accent2 = profile.secondary_color || "#14b8a6";
-    const fontFamily = FONT_MAP[profile.font_choice || "inter"] || FONT_MAP.inter;
-    const fontUrl = FONT_URLS[profile.font_choice || "inter"] || FONT_URLS.inter;
     const cardStyle = getCardStyle(profile.card_style || "glass", accent);
+    const buttonStyle = getButtonStyle(profile.button_style || "solid", accent);
     const animEnabled = profile.animation_enabled !== false;
     const divider = dividerLine(accent, accent2);
+
+    const headingFont = FONT_MAP[profile.heading_font?.toLowerCase() || "inter"] || FONT_MAP.inter;
+    const bodyFont = FONT_MAP[profile.body_font?.toLowerCase() || "inter"] || FONT_MAP.inter;
+    const headingFontUrl = FONT_URLS[profile.heading_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
+    const bodyFontUrl = FONT_URLS[profile.body_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
+
+    const bg = profile.bg_color || "#030310";
+    const surface = profile.surface_color || "rgba(255,255,255,0.03)";
+    const textPrimary = profile.text_primary || "#e2e8f0";
+    const textMuted = profile.text_muted || "#94a3b8";
+    const textDim = profile.text_dim || "#64748b";
+
+    const containerMaxWidth = profile.container_width === "narrow" ? "768px" : profile.container_width === "wide" ? "1200px" : "1100px";
 
     // Animation helpers — if disabled, show instantly
     const anim = animEnabled ? fadeUp : { hidden: {}, visible: {} };
@@ -423,10 +465,36 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     };
 
     return (
-        <div style={{ minHeight: "100vh", position: "relative", overflow: "hidden", fontFamily }}>
-            {/* Dynamic font import */}
+        <div style={{
+            minHeight: "100vh", position: "relative", overflow: "hidden",
+            fontFamily: bodyFont, background: bg, color: textPrimary,
+        }}>
+            {/* Dynamic font imports */}
             {/* eslint-disable-next-line @next/next/no-page-custom-font */}
-            <link rel="stylesheet" href={fontUrl} />
+            <link rel="stylesheet" href={headingFontUrl} />
+            {headingFontUrl !== bodyFontUrl && <link rel="stylesheet" href={bodyFontUrl} />}
+
+            {/* Injected Styles */}
+            <style dangerouslySetInnerHTML={{
+                __html: `
+                :root {
+                    --background: ${bg};
+                    --surface: ${surface};
+                    --foreground: ${textPrimary};
+                    --foreground-muted: ${textMuted};
+                    --foreground-dim: ${textDim};
+                    --accent: ${accent};
+                    --accent2: ${accent2};
+                    --heading-font: ${headingFont};
+                    --body-font: ${bodyFont};
+                }
+                h1, h2, h3, h4, .section-title, .hero-title { font-family: var(--heading-font) !important; }
+                body { font-family: var(--body-font); }
+                .portfolio-container { max-width: ${containerMaxWidth} !important; }
+                ${profile.custom_css || ""}
+                `
+            }} />
+
             <PortfolioNavbar data={data} />
 
             {/* ─── HERO ─── */}
@@ -513,21 +581,21 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         {profile.email && (
                             <a href={`mailto:${profile.email}`} className="pf-cta-pill" style={{
                                 ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
-                            }}>
+                            }} {...cardHover(accent)}>
                                 <Mail size={16} /> {profile.email}
                             </a>
                         )}
                         {profile.github && (
                             <a href={`https://github.com/${profile.github}`} target="_blank" rel="noopener noreferrer" style={{
                                 ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
-                            }}>
+                            }} {...cardHover(accent)}>
                                 <Github size={16} /> GitHub
                             </a>
                         )}
                         {profile.linkedin && (
                             <a href={`https://linkedin.com/in/${profile.linkedin}`} target="_blank" rel="noopener noreferrer" style={{
                                 ...pill, background: glassBg, border: `1px solid ${glassBorder}`, color: fgMuted,
-                            }}>
+                            }} {...cardHover(accent)}>
                                 <Linkedin size={16} /> LinkedIn
                             </a>
                         )}
@@ -537,9 +605,8 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                     {profile.resume_url && (
                         <motion.div variants={fadeUp} style={{ marginBottom: "16px" }}>
                             <a href={profile.resume_url} target="_blank" rel="noopener noreferrer" style={{
-                                ...pill, background: `linear-gradient(135deg, ${accent}, ${accent2})`,
-                                color: "#fff", fontWeight: 600, fontSize: "0.9rem",
-                                boxShadow: `0 4px 20px ${accent}30`,
+                                ...buttonStyle, padding: "12px 28px", fontSize: "0.95rem", textDecoration: "none",
+                                display: "inline-flex", alignItems: "center", gap: 12, border: "none"
                             }}>
                                 <Download size={16} /> Download Resume
                             </a>
@@ -561,7 +628,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
             {/* ─── ABOUT ─── */}
             <section id="about" style={{ ...sectionPad, position: "relative" }}>
-                <div style={container}>
+                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>About Me</motion.span>
                         <motion.h2 variants={fadeUp} style={sectionTitle}>Get to Know Me</motion.h2>
@@ -648,7 +715,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                         skills: () => skills.length > 0 ? (
                             <section id="skills" style={{ ...sectionPad, position: "relative" }}>
-                                <div style={container}>
+                                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Expertise</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Skills & Technologies</motion.h2>
@@ -681,7 +748,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                         experience: () => experiences.length > 0 ? (
                             <section id="experience" style={{ ...sectionPad, position: "relative" }}>
-                                <div style={container}>
+                                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Experience</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Where I&apos;ve Worked</motion.h2>
@@ -742,7 +809,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                         projects: () => projects.length > 0 ? (
                             <section id="projects" style={{ ...sectionPad, position: "relative" }}>
-                                <div style={container}>
+                                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Portfolio</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Featured Projects</motion.h2>
@@ -797,7 +864,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                         leadership: () => leadership.length > 0 ? (
                             <section id="leadership" style={{ ...sectionPad, position: "relative" }}>
-                                <div style={container}>
+                                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Leadership</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Making an Impact</motion.h2>
@@ -843,7 +910,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                         education: () => education.length > 0 ? (
                             <section id="education" style={{ ...sectionPad, position: "relative" }}>
-                                <div style={container}>
+                                <div className="portfolio-container" style={{ margin: "0 auto" }}>
                                     <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                         <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>Education</motion.span>
                                         <motion.h2 variants={fadeUp} style={sectionTitle}>Academic Background</motion.h2>
@@ -927,7 +994,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                 /* ── Custom Section Renderer ── */
                 const renderCustomSection = (cs: CustomSectionType) => (
                     <section key={cs.id} id={cs.id} style={{ ...sectionPad, position: "relative" }}>
-                        <div style={container}>
+                        <div className="portfolio-container" style={{ margin: "0 auto" }}>
                             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.15 }} variants={stagger}>
                                 <motion.span variants={fadeUp} style={{ ...sectionLabel, color: accent }}>
                                     {cs.title}
@@ -965,15 +1032,13 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                                                         <li key={j} style={{ color: fgMuted, fontSize: "0.95rem", lineHeight: 1.8, position: "relative", paddingLeft: "24px", marginBottom: "16px" }}>
                                                             <span style={{ position: "absolute", left: 0, top: "10px", width: "6px", height: "6px", borderRadius: "50%", background: accent }} />
                                                             {url ? (
-                                                                <a href={url} target="_blank" rel="noopener noreferrer" style={{ color: accent, fontWeight: 500, textDecoration: "none" }}>
+                                                                <a key={j} href={url} target="_blank" rel="noopener noreferrer" style={{ ...buttonStyle, padding: "8px 18px", fontSize: "0.85rem", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 8 }}>
                                                                     {text}
                                                                 </a>
                                                             ) : (
                                                                 <span style={{ color: fg, fontWeight: 500 }}>{text}</span>
                                                             )}
-                                                            {desc && (
-                                                                <p style={{ margin: "4px 0 0", fontSize: "0.85rem", opacity: 0.8 }}>{desc}</p>
-                                                            )}
+                                                            <p style={{ margin: "4px 0 0", fontSize: "0.85rem", opacity: 0.8 }}>{desc}</p>
                                                         </li>
                                                     );
                                                 })}

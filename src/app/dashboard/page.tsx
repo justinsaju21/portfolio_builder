@@ -24,7 +24,19 @@ interface ProfileData {
     github: string; linkedin: string; degree: string; university: string;
     graduation_year: string; profile_image: string; resume_url: string;
     primary_color: string; secondary_color: string; font_choice: string;
-    card_style: string; animation_enabled: boolean;
+    card_style: string;
+    animation_enabled: boolean;
+    // Granular Styling
+    bg_color: string;
+    surface_color: string;
+    text_primary: string;
+    text_muted: string;
+    text_dim: string;
+    heading_font: string;
+    body_font: string;
+    button_style: string;
+    container_width: string;
+    custom_css: string;
 }
 interface ExperienceItem {
     title: string; company: string; location: string; start_date: string;
@@ -107,6 +119,10 @@ export default function DashboardPage() {
         degree: "", university: "", graduation_year: "", profile_image: "", resume_url: "",
         primary_color: "#6366f1", secondary_color: "#14b8a6", font_choice: "inter",
         card_style: "glass", animation_enabled: true,
+        bg_color: "#ffffff", surface_color: "#f8fafc", text_primary: "#0f172a",
+        text_muted: "#475569", text_dim: "#94a3b8", heading_font: "Inter",
+        body_font: "Inter", button_style: "solid", container_width: "normal",
+        custom_css: "",
     });
     const [experiences, setExperiences] = useState<ExperienceItem[]>([]);
     const [projects, setProjects] = useState<ProjectItem[]>([]);
@@ -155,6 +171,16 @@ export default function DashboardPage() {
                     font_choice: data.profile.font_choice || "inter",
                     card_style: data.profile.card_style || "glass",
                     animation_enabled: data.profile.animation_enabled !== false,
+                    bg_color: data.profile.bg_color || "#ffffff",
+                    surface_color: data.profile.surface_color || "#f8fafc",
+                    text_primary: data.profile.text_primary || "#0f172a",
+                    text_muted: data.profile.text_muted || "#475569",
+                    text_dim: data.profile.text_dim || "#94a3b8",
+                    heading_font: data.profile.heading_font || "Inter",
+                    body_font: data.profile.body_font || "Inter",
+                    button_style: data.profile.button_style || "solid",
+                    container_width: data.profile.container_width || "normal",
+                    custom_css: data.profile.custom_css || "",
                 });
             }
             setExperiences(data.experiences || []);
@@ -925,74 +951,99 @@ export default function DashboardPage() {
                                             </div>
                                             {/* Live gradient preview */}
                                             <div style={{ marginTop: 20, padding: "16px 20px", borderRadius: 14, background: `linear-gradient(135deg, ${profileData.primary_color}, ${profileData.secondary_color})`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                                <span style={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>Live Preview</span>
-                                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" }}>This is how your gradient will look</span>
+                                                <span style={{ color: "white", fontWeight: 600, fontSize: "0.9rem" }}>Gradient Preview</span>
+                                                <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem" }}>Header & Accents</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Granular Color Control */}
+                                        <div style={card}>
+                                            <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg, marginBottom: 20 }}>System Colors</h3>
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                                                <div>
+                                                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 500, color: fgMuted, marginBottom: 8 }}>Background</label>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <input type="color" value={profileData.bg_color} onChange={(e) => setProfileData({ ...profileData, bg_color: e.target.value })}
+                                                            style={{ width: 34, height: 34, border: "none", borderRadius: 8, cursor: "pointer", background: "transparent" }} />
+                                                        <span style={{ fontSize: "0.75rem", color: fgDim, fontFamily: "monospace" }}>{profileData.bg_color}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 500, color: fgMuted, marginBottom: 8 }}>Surface/Cards</label>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <input type="color" value={profileData.surface_color} onChange={(e) => setProfileData({ ...profileData, surface_color: e.target.value })}
+                                                            style={{ width: 34, height: 34, border: "none", borderRadius: 8, cursor: "pointer", background: "transparent" }} />
+                                                        <span style={{ fontSize: "0.75rem", color: fgDim, fontFamily: "monospace" }}>{profileData.surface_color}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 500, color: fgMuted, marginBottom: 8 }}>Primary Text</label>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <input type="color" value={profileData.text_primary} onChange={(e) => setProfileData({ ...profileData, text_primary: e.target.value })}
+                                                            style={{ width: 34, height: 34, border: "none", borderRadius: 8, cursor: "pointer", background: "transparent" }} />
+                                                        <span style={{ fontSize: "0.75rem", color: fgDim, fontFamily: "monospace" }}>{profileData.text_primary}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 500, color: fgMuted, marginBottom: 8 }}>Muted Text</label>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                        <input type="color" value={profileData.text_muted} onChange={(e) => setProfileData({ ...profileData, text_muted: e.target.value })}
+                                                            style={{ width: 34, height: 34, border: "none", borderRadius: 8, cursor: "pointer", background: "transparent" }} />
+                                                        <span style={{ fontSize: "0.75rem", color: fgDim, fontFamily: "monospace" }}>{profileData.text_muted}</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
                                         {/* Font Selection */}
                                         <div style={card}>
                                             <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg, marginBottom: 20 }}>Typography</h3>
-                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                                                {[
-                                                    { value: "inter", label: "Inter", preview: "Clean & Modern", family: "Inter, sans-serif" },
-                                                    { value: "playfair", label: "Playfair Display", preview: "Elegant & Serif", family: "'Playfair Display', serif" },
-                                                    { value: "space_grotesk", label: "Space Grotesk", preview: "Tech & Bold", family: "'Space Grotesk', sans-serif" },
-                                                    { value: "jetbrains", label: "JetBrains Mono", preview: "Developer Style", family: "'JetBrains Mono', monospace" },
-                                                ].map((font) => {
-                                                    const isActive = profileData.font_choice === font.value;
-                                                    return (
-                                                        <button key={font.value} onClick={() => setProfileData({ ...profileData, font_choice: font.value })}
-                                                            style={{
-                                                                padding: "16px", borderRadius: 14, cursor: "pointer", textAlign: "left",
-                                                                border: `2px solid ${isActive ? profileData.primary_color : glassBorder}`,
-                                                                background: isActive ? `${profileData.primary_color}10` : "transparent",
-                                                                transition: "all 0.2s",
-                                                            }}>
-                                                            <span style={{ fontFamily: font.family, fontSize: "1.1rem", fontWeight: 700, color: fg, display: "block", marginBottom: 4 }}>{font.label}</span>
-                                                            <span style={{ fontFamily: font.family, fontSize: "0.8rem", color: fgMuted }}>{font.preview}</span>
-                                                        </button>
-                                                    );
-                                                })}
+                                            <div style={inputRow}>
+                                                <Select label="Heading Font" value={profileData.heading_font} onChange={(v) => setProfileData({ ...profileData, heading_font: v })}
+                                                    options={[
+                                                        { value: "Inter", label: "Inter (Modern)" },
+                                                        { value: "Playfair Display", label: "Playfair Display (Serif)" },
+                                                        { value: "Space Grotesk", label: "Space Grotesk (Tech)" },
+                                                        { value: "JetBrains Mono", label: "JetBrains Mono (Monospace)" },
+                                                        { value: "Outfit", label: "Outfit (Geometric)" },
+                                                        { value: "DM Serif Display", label: "DM Serif Display (Classic)" },
+                                                    ]} />
+                                                <Select label="Body Font" value={profileData.body_font} onChange={(v) => setProfileData({ ...profileData, body_font: v })}
+                                                    options={[
+                                                        { value: "Inter", label: "Inter (Modern)" },
+                                                        { value: "Roboto", label: "Roboto (Neutral)" },
+                                                        { value: "Outfit", label: "Outfit (Geometric)" },
+                                                        { value: "Open Sans", label: "Open Sans (Readable)" },
+                                                        { value: "Lora", label: "Lora (Serif)" },
+                                                    ]} />
                                             </div>
                                         </div>
 
-                                        {/* Card Style */}
+                                        {/* Layout & Component Style */}
                                         <div style={card}>
-                                            <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg, marginBottom: 20 }}>Card Style</h3>
-                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
-                                                {[
-                                                    { value: "glass", label: "Glass", desc: "Frosted glass effect" },
-                                                    { value: "solid", label: "Solid", desc: "Opaque cards" },
-                                                    { value: "outline", label: "Outline", desc: "Bordered, transparent" },
-                                                ].map((style) => {
-                                                    const isActive = profileData.card_style === style.value;
-                                                    const previewStyle: React.CSSProperties = style.value === "glass"
-                                                        ? { background: "rgba(255,255,255,0.05)", backdropFilter: "blur(8px)", border: `1px solid rgba(255,255,255,0.08)` }
-                                                        : style.value === "solid"
-                                                            ? { background: "rgba(30,30,50,0.95)", border: `1px solid rgba(255,255,255,0.06)` }
-                                                            : { background: "transparent", border: `2px solid rgba(255,255,255,0.12)` };
-                                                    return (
-                                                        <button key={style.value} onClick={() => setProfileData({ ...profileData, card_style: style.value })}
-                                                            style={{
-                                                                padding: 0, borderRadius: 14, cursor: "pointer", textAlign: "center", overflow: "hidden",
-                                                                border: `2px solid ${isActive ? profileData.primary_color : glassBorder}`,
-                                                                background: isActive ? `${profileData.primary_color}08` : "transparent",
-                                                                transition: "all 0.2s",
-                                                            }}>
-                                                            <div style={{ ...previewStyle, borderRadius: 8, margin: 12, padding: "20px 12px" }}>
-                                                                <div style={{ width: "60%", height: 6, borderRadius: 3, background: `${profileData.primary_color}60`, margin: "0 auto 8px" }} />
-                                                                <div style={{ width: "80%", height: 4, borderRadius: 2, background: "rgba(255,255,255,0.1)", margin: "0 auto 4px" }} />
-                                                                <div style={{ width: "50%", height: 4, borderRadius: 2, background: "rgba(255,255,255,0.06)", margin: "0 auto" }} />
-                                                            </div>
-                                                            <div style={{ padding: "8px 12px 14px" }}>
-                                                                <span style={{ fontWeight: 600, fontSize: "0.85rem", color: fg, display: "block" }}>{style.label}</span>
-                                                                <span style={{ fontSize: "0.72rem", color: fgDim }}>{style.desc}</span>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
+                                            <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg, marginBottom: 20 }}>Component & Layout</h3>
+                                            <div style={inputRow}>
+                                                <div style={grid2}>
+                                                    <Select label="Button Style" value={profileData.button_style} onChange={(v) => setProfileData({ ...profileData, button_style: v })}
+                                                        options={[{ value: "solid", label: "Solid" }, { value: "outline", label: "Outline" }, { value: "ghost", label: "Ghost" }]} />
+                                                    <Select label="Container Width" value={profileData.container_width} onChange={(v) => setProfileData({ ...profileData, container_width: v })}
+                                                        options={[{ value: "narrow", label: "Narrow (768px)" }, { value: "normal", label: "Normal (900px)" }, { value: "wide", label: "Wide (1200px)" }]} />
+                                                </div>
+                                                <Select label="Card Appearance" value={profileData.card_style} onChange={(v) => setProfileData({ ...profileData, card_style: v })}
+                                                    options={[{ value: "glass", label: "Glassmorphism" }, { value: "solid", label: "Solid Surface" }, { value: "outline", label: "Outline Only" }]} />
                                             </div>
+                                        </div>
+
+                                        {/* Advanced: Custom CSS */}
+                                        <div style={card}>
+                                            <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: fg, marginBottom: 20, display: "flex", alignItems: "center", gap: 8 }}>
+                                                <Code style={{ width: 16, height: 16, color: accent2 }} /> Advanced: Custom CSS
+                                            </h3>
+                                            <Textarea label="Custom CSS Rules" value={profileData.custom_css} onChange={(v) => setProfileData({ ...profileData, custom_css: v })}
+                                                placeholder=".hero-title { font-size: 5rem; }\n.skill-badge:hover { transform: rotate(5deg); }" rows={6} />
+                                            <p style={{ fontSize: "0.72rem", color: fgDim, marginTop: 10 }}>
+                                                🚀 Target existing classes like `.glass-card`, `.section-title`, `.hero-title`, etc.
+                                            </p>
                                         </div>
 
                                         {/* Animation Toggle */}
