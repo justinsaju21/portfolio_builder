@@ -31,6 +31,16 @@ const demoData: PortfolioData = {
         section_order: "about,skills,experience,projects,leadership,education,contact",
         section_visibility: "",
         custom_sections: "[]",
+        bg_color: "#ffffff",
+        surface_color: "#f8fafc",
+        text_primary: "#0f172a",
+        text_muted: "#475569",
+        text_dim: "#94a3b8",
+        heading_font: "Inter",
+        body_font: "Inter",
+        button_style: "solid",
+        container_width: "normal",
+        custom_css: "",
     },
     experiences: [
         {
