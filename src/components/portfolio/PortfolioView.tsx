@@ -508,6 +508,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     // Theme Management
     const [currentTheme, setCurrentTheme] = useState<string>(profile.color_theme || "dark");
     const theme = THEMES[currentTheme] || THEMES.dark;
+    const isBaseTheme = currentTheme === (profile.color_theme || "dark");
 
     const toggleTheme = () => {
         const themeList = Object.keys(THEMES);
@@ -517,7 +518,17 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
     const accent = profile.primary_color || "#818cf8";
     const accent2 = profile.secondary_color || "#14b8a6";
-    const cardStyle = getCardStyle(profile.card_style || "glass", theme);
+
+    // Use profile colors if it's the base theme, otherwise use theme presets
+    const bg = isBaseTheme ? (profile.bg_color || theme.bg) : theme.bg;
+    const surface = isBaseTheme ? (profile.surface_color || theme.surface) : theme.surface;
+    const textPrimary = isBaseTheme ? (profile.text_primary || theme.textPrimary) : theme.textPrimary;
+    const textMuted = isBaseTheme ? (profile.text_muted || theme.textMuted) : theme.textMuted;
+    const textDim = isBaseTheme ? (profile.text_dim || theme.textDim) : theme.textDim;
+    const glassBgVar = isBaseTheme ? (profile.surface_color || theme.glassBg) : theme.glassBg;
+    const glassBorderVar = theme.glassBorder;
+
+    const cardStyle = getCardStyle(profile.card_style || "glass", { ...theme, cardBg: surface, glassBg: glassBgVar });
     const buttonStyle = getButtonStyle(profile.button_style || "solid", accent);
     const animEnabled = profile.animation_enabled !== false;
     const divider = dividerLine(accent, accent2);
@@ -526,14 +537,6 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const bodyFont = FONT_MAP[profile.body_font?.toLowerCase() || "inter"] || FONT_MAP.inter;
     const headingFontUrl = FONT_URLS[profile.heading_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
     const bodyFontUrl = FONT_URLS[profile.body_font?.toLowerCase() || "inter"] || FONT_URLS.inter;
-
-    const bg = theme.bg;
-    const surface = theme.surface;
-    const textPrimary = theme.textPrimary;
-    const textMuted = theme.textMuted;
-    const textDim = theme.textDim;
-    const glassBgVar = theme.glassBg;
-    const glassBorderVar = theme.glassBorder;
 
     const containerMaxWidth = profile.container_width === "narrow" ? "768px" : profile.container_width === "wide" ? "1200px" : "1100px";
 
