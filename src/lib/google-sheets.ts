@@ -640,7 +640,17 @@ export async function addSectionRow(
         try {
             const doc = await getSpreadsheet();
             const sheet = doc.sheetsByTitle[sheetName];
-            if (!sheet) return false;
+
+            if (!sheet) {
+                console.error(`Sheet "${sheetName}" not found in spreadsheet.`);
+                // If it's missing, maybe we should try ensuring sheets exist again?
+                // But only if we haven't already.
+                await ensureSheetsExist("retry"); // Pass something to indicate it's a retry check
+                const sheetRetry = doc.sheetsByTitle[sheetName];
+                if (!sheetRetry) return false;
+            }
+
+            const sheetToUse = doc.sheetsByTitle[sheetName];
 
             // Convert arrays to pipe-separated strings for Google Sheets
             const rowData: Record<string, string> = {};
@@ -654,15 +664,16 @@ export async function addSectionRow(
                 }
             }
 
-            await sheet.addRow(rowData);
+            await sheetToUse.addRow(rowData);
             return true;
         } catch (error) {
-            console.warn(`Attempt ${i + 1} failed adding row to ${sheetName}:`, error);
+            console.warn(`Attempt ${i + 1} failed adding row to ${sheetName}. Error:`, error);
             if (i === retries - 1) {
-                console.error(`Final failure adding row to ${sheetName}:`, error);
+                console.error(`Final failure adding row to ${sheetName} after ${retries} attempts:`, error);
                 return false;
             }
-            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+            // Increase initial delay to 1s and use steeper backoff
+            await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, i)));
         }
     }
     return false;
@@ -731,77 +742,82 @@ export function getSectionSheetName(section: string): string | null {
     return map[section] || null;
 }
 
+// Promise to track the ongoing initialization to handle concurrent requests
+let initializationPromise: Promise<string[]> | null = null;
+
 /**
  * Ensure all required sheets exist with proper headers
+ * Optimized with a promise to handle concurrent requests and run only once
  */
 export async function ensureSheetsExist(username: string): Promise<string[]> {
-    try {
-        const doc = await getSpreadsheet();
-        if (!doc) return [];
+    if (initializationPromise) return initializationPromise;
 
-        const addedSheets: string[] = [];
-        const schemas: Record<string, string[]> = {
-            [SHEET_NAMES.USERS]: [
-                "username", "password_pin", "full_name", "tagline", "email", "github", "linkedin", "bio",
-                "degree", "university", "graduation_year", "theme_preference", "profile_image", "resume_url",
-                "primary_color", "secondary_color", "font_choice", "card_style", "animation_enabled",
-                "section_order", "section_visibility", "custom_sections", "bg_color", "surface_color",
-                "text_primary", "text_muted", "text_dim", "heading_font", "body_font", "button_style",
-                "container_width", "custom_css", "color_theme", "rss_url", "google_analytics_id",
-                "status_badge", "timeline_view", "github_fetching"
-            ],
-            [SHEET_NAMES.EXPERIENCE]: ["username", "title", "company", "location", "start_date", "end_date", "is_current", "description_points", "type"],
-            [SHEET_NAMES.PROJECTS]: ["username", "title", "description", "tech_stack", "repo_url", "live_url", "image_url", "featured"],
-            [SHEET_NAMES.SKILLS]: ["username", "category", "skills_list"],
-            [SHEET_NAMES.EDUCATION]: ["username", "degree", "field", "institution", "year", "is_current"],
-            [SHEET_NAMES.LEADERSHIP]: ["username", "title", "organization", "description", "achievements", "type"],
-            [SHEET_NAMES.HACKATHONS]: ["username", "name", "project_built", "team_size", "position", "proof_link"],
-            [SHEET_NAMES.RESEARCH]: ["username", "title", "journal_conference", "index_status", "publication_status", "link"],
-            [SHEET_NAMES.ENTREPRENEURSHIP]: ["username", "startup_name", "registration_details", "revenue_funding", "description", "proof_link"],
-            [SHEET_NAMES.CERTIFICATIONS]: ["username", "provider", "certificate_name", "validation_id", "proof_link"],
-            [SHEET_NAMES.EXAMS]: ["username", "exam_name", "score_rank", "proof_link"],
-            [SHEET_NAMES.SPORTS_CULTURAL]: ["username", "event_name", "level", "position_won", "proof_link"],
-            [SHEET_NAMES.VOLUNTEERING]: ["username", "organization", "role", "hours_served", "impact", "proof_link"],
-            [SHEET_NAMES.SCHOLARSHIPS]: ["username", "name", "awarding_body", "amount_prestige", "proof_link"],
-            [SHEET_NAMES.CLUB_ACTIVITIES]: ["username", "club_name", "position", "key_events", "impact_description", "proof_link"],
-            [SHEET_NAMES.DEPT_CONTRIBUTIONS]: ["username", "event_name", "role", "contribution_description", "proof_link"],
-            [SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS]: ["username", "organization", "membership_id", "role", "proof_link"],
-            [SHEET_NAMES.REFERENCES]: ["username", "faculty_name", "contact", "lor_link"],
-        };
+    initializationPromise = (async () => {
+        try {
+            const doc = await getSpreadsheet();
+            if (!doc) return [];
 
-        // Cache for 60 seconds to avoid excessive network calls in same request burst
-        // (Serverless cache is per-instance but helpful for page + metadata calls)
-        const checkSheet = async (title: string, headers: string[]) => {
-            let sheet = doc.sheetsByTitle[title];
-            if (!sheet) {
-                await doc.addSheet({ title, headerValues: headers });
-                return title;
-            } else {
-                // To speed up, we don't load headers on every single check
-                // We only do it if we suspect a change or on a sampled basis
-                // For now, let's keep it but at least run them in parallel
-                await sheet.loadHeaderRow();
-                const existingHeaders = sheet.headerValues;
-                const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
+            console.log(`Verifying spreadsheet schema (requested by ${username})...`);
+            const schemas: Record<string, string[]> = {
+                [SHEET_NAMES.USERS]: [
+                    "username", "password_pin", "full_name", "tagline", "email", "github", "linkedin", "bio",
+                    "degree", "university", "graduation_year", "theme_preference", "profile_image", "resume_url",
+                    "primary_color", "secondary_color", "font_choice", "card_style", "animation_enabled",
+                    "section_order", "section_visibility", "custom_sections", "bg_color", "surface_color",
+                    "text_primary", "text_muted", "text_dim", "heading_font", "body_font", "button_style",
+                    "container_width", "custom_css", "color_theme", "rss_url", "google_analytics_id",
+                    "status_badge", "timeline_view", "github_fetching"
+                ],
+                [SHEET_NAMES.EXPERIENCE]: ["username", "title", "company", "location", "start_date", "end_date", "is_current", "description_points", "type"],
+                [SHEET_NAMES.PROJECTS]: ["username", "title", "description", "tech_stack", "repo_url", "live_url", "image_url", "featured"],
+                [SHEET_NAMES.SKILLS]: ["username", "category", "skills_list"],
+                [SHEET_NAMES.EDUCATION]: ["username", "degree", "field", "institution", "year", "is_current"],
+                [SHEET_NAMES.LEADERSHIP]: ["username", "title", "organization", "description", "achievements", "type"],
+                [SHEET_NAMES.HACKATHONS]: ["username", "name", "project_built", "team_size", "position", "proof_link"],
+                [SHEET_NAMES.RESEARCH]: ["username", "title", "journal_conference", "index_status", "publication_status", "link"],
+                [SHEET_NAMES.ENTREPRENEURSHIP]: ["username", "startup_name", "registration_details", "revenue_funding", "description", "proof_link"],
+                [SHEET_NAMES.CERTIFICATIONS]: ["username", "provider", "certificate_name", "validation_id", "proof_link"],
+                [SHEET_NAMES.EXAMS]: ["username", "exam_name", "score_rank", "proof_link"],
+                [SHEET_NAMES.SPORTS_CULTURAL]: ["username", "event_name", "level", "position_won", "proof_link"],
+                [SHEET_NAMES.VOLUNTEERING]: ["username", "organization", "role", "hours_served", "impact", "proof_link"],
+                [SHEET_NAMES.SCHOLARSHIPS]: ["username", "name", "awarding_body", "amount_prestige", "proof_link"],
+                [SHEET_NAMES.CLUB_ACTIVITIES]: ["username", "club_name", "position", "key_events", "impact_description", "proof_link"],
+                [SHEET_NAMES.DEPT_CONTRIBUTIONS]: ["username", "event_name", "role", "contribution_description", "proof_link"],
+                [SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS]: ["username", "organization", "membership_id", "role", "proof_link"],
+                [SHEET_NAMES.REFERENCES]: ["username", "faculty_name", "contact", "lor_link"],
+            };
 
-                if (missingHeaders.length > 0) {
-                    await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
-                    return `${title} (updated headers)`;
+            const checkSheet = async (title: string, headers: string[]) => {
+                let sheet = doc.sheetsByTitle[title];
+                if (!sheet) {
+                    await doc.addSheet({ title, headerValues: headers });
+                    return title;
+                } else {
+                    await sheet.loadHeaderRow();
+                    const existingHeaders = sheet.headerValues;
+                    const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
+                    if (missingHeaders.length > 0) {
+                        await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
+                        return `${title} (updated headers)`;
+                    }
                 }
-            }
-            return null;
-        };
+                return null;
+            };
 
-        // Run all checks in parallel (Google Sheets API handle concurrency reasonably well)
-        const results = await Promise.all(
-            Object.entries(schemas).map(([title, headers]) => checkSheet(title, headers))
-        );
+            const results = await Promise.all(
+                Object.entries(schemas).map(([title, headers]) => checkSheet(title, headers))
+            );
 
-        return results.filter((r): r is string => r !== null);
-    } catch (error) {
-        console.error("Error ensuring sheets exist:", error);
-        return [];
-    }
+            console.log("Spreadsheet schema verification successful.");
+            return results.filter((r): r is string => r !== null);
+        } catch (error) {
+            console.error("Error during spreadsheet initialization:", error);
+            initializationPromise = null; // Allow retry on next request
+            return [];
+        }
+    })();
+
+    return initializationPromise;
 }
 
 // Helper to parse comma-separated or pipe-separated lists
