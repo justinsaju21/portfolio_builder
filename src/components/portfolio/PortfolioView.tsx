@@ -352,7 +352,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                     <h3 style={{ fontSize: "1.1rem", fontWeight: 800, background: `linear-gradient(135deg, ${accent}, ${accent2})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{profile.full_name?.split(" ")[0] || "Portfolio"}</h3>
                     <div style={{ display: "flex", gap: "20px" }}>
                         {navLinks.map(l => (
-                            <button key={l.id} onClick={() => document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500 }}>{l.label}</button>
+                            <button key={l.id} onClick={() => document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600 }}>{l.label}</button>
                         ))}
                         <button onClick={toggleTheme} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary }}>
                             {currentTheme === "light" ? <Moon size={16} /> : <Sun size={16} />}
