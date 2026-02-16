@@ -212,6 +212,36 @@ export default function DashboardPage() {
         }
     };
 
+    const updateSectionItem = async (sectionId: string, index: number, itemData: any) => {
+        if (!username) return;
+        setActionLoading(`upd-${sectionId}-${index}`);
+        setActionError("");
+        try {
+            const res = await fetch(`/api/user/${username}/sections`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify({ section: sectionId, index, data: itemData }),
+            });
+            if (res.status === 401) {
+                redirectToLogin();
+                return;
+            }
+            if (res.ok) {
+                await fetchData(username);
+            } else {
+                const errData = await res.json().catch(() => ({}));
+                setActionError(errData.error || "Failed to update. Try again.");
+                alert(errData.error || "Failed to update item.");
+            }
+        } catch (e) {
+            console.error(e);
+            setActionError("Failed to update. Try again.");
+        } finally {
+            setActionLoading(null);
+        }
+    };
+
     const handleLogout = async () => {
         await fetch("/api/auth/logout", { method: "POST" });
         localStorage.removeItem("portfolio_user");
@@ -423,6 +453,7 @@ export default function DashboardPage() {
                                                 data={sectionsData[config.id] || []}
                                                 onAdd={(newItem) => addSectionItem(config.id, newItem)}
                                                 onDelete={(index) => deleteSectionItem(config.id, index)}
+                                                onUpdate={(index, updatedItem) => updateSectionItem(config.id, index, updatedItem)}
                                                 actionLoading={actionLoading}
                                             />
                                         );

@@ -39,12 +39,14 @@ interface GenericSectionProps {
     data: any[];
     onAdd: (item: any) => Promise<void>;
     onDelete: (index: number) => Promise<void>;
+    onUpdate: (index: number, item: any) => Promise<void>;
     actionLoading: string | null;
 }
 
-export default function GenericSection({ config, data, onAdd, onDelete, actionLoading }: GenericSectionProps) {
+export default function GenericSection({ config, data, onAdd, onDelete, onUpdate, actionLoading }: GenericSectionProps) {
     const [showAdd, setShowAdd] = useState(false);
     const [newItem, setNewItem] = useState<any>({});
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     // Helper state for list inputs (e.g. description points)
     const [tempListInput, setTempListInput] = useState<Record<string, string>>({});
@@ -58,8 +60,28 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
             alert(`Please fill in required fields: ${missing.map(f => f.label).join(", ")}`);
             return;
         }
-        await onAdd(newItem);
+
+        if (editingIndex !== null) {
+            await onUpdate(editingIndex, newItem);
+        } else {
+            await onAdd(newItem);
+        }
+
         setNewItem({});
+        setEditingIndex(null);
+        setShowAdd(false);
+    };
+
+    const handleEdit = (index: number) => {
+        setNewItem({ ...data[index] });
+        setEditingIndex(index);
+        setShowAdd(true);
+        // Scroll to form?
+    };
+
+    const handleCancel = () => {
+        setNewItem({});
+        setEditingIndex(null);
         setShowAdd(false);
     };
 
@@ -90,11 +112,12 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
             {/* List Existing Items */}
             {data.map((item, i) => (
                 <ItemCard key={i}
-                    title={item.title || item.name || item.company || item.organization || item.university || item.event_name || item.club_name || item.exam_name || item.startup_name || item.provider || "Untitled"}
+                    title={item.title || item.name || item.category || item.company || item.organization || item.university || item.institution || item.event_name || item.club_name || item.exam_name || item.startup_name || item.provider || item.certificate_name || item.faculty_name || "Untitled"}
                     subtitle={config.renderSubtitle(item)}
                     badges={config.renderBadges ? config.renderBadges(item) : undefined}
                     onDelete={() => onDelete(i)}
-                    loading={actionLoading === `del-${config.id}-${i}`}
+                    onEdit={() => handleEdit(i)}
+                    loading={actionLoading === `del-${config.id}-${i}` || actionLoading === `upd-${config.id}-${i}`}
                 >
                     {/* Render specific children for lists if needed, e.g. description_points */}
                     {item.description_points && Array.isArray(item.description_points) && item.description_points.length > 0 && (
@@ -105,14 +128,16 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
                 </ItemCard>
             ))}
 
-            <AddButton show={showAdd} setShow={setShowAdd} label={`Add ${config.label}`} />
+            {!showAdd && <AddButton show={showAdd} setShow={setShowAdd} label={`Add ${config.label}`} />}
 
             <AnimatePresence>
                 {showAdd && (
                     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
                         style={{ overflow: "hidden" }}>
                         <div style={card}>
-                            <h4 style={{ fontWeight: 700, color: "var(--foreground)", marginBottom: 18, fontSize: "0.95rem" }}>New {config.label}</h4>
+                            <h4 style={{ fontWeight: 700, color: "var(--foreground)", marginBottom: 18, fontSize: "0.95rem" }}>
+                                {editingIndex !== null ? `Edit ${config.label}` : `New ${config.label}`}
+                            </h4>
                             <div style={inputRow}>
                                 {config.fields.map((field) => {
                                     const val = newItem[field.name] !== undefined ? newItem[field.name] : getInitialValue(field);
@@ -162,7 +187,7 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
                                 })}
                             </div>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-                                <button onClick={() => setShowAdd(false)} style={{ padding: "10px 20px", borderRadius: 12, background: "transparent", color: "var(--foreground-muted)", border: "none", cursor: "pointer" }}>Cancel</button>
+                                <button onClick={handleCancel} style={{ padding: "10px 20px", borderRadius: 12, background: "transparent", color: "var(--foreground-muted)", border: "none", cursor: "pointer" }}>Cancel</button>
                                 <button onClick={handleAdd}
                                     disabled={!!actionLoading}
                                     style={{
@@ -172,7 +197,7 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
                                         cursor: actionLoading ? "not-allowed" : "pointer",
                                         display: "flex", alignItems: "center", gap: "8px"
                                     }}>
-                                    {actionLoading ? "Saving..." : "Save"}
+                                    {actionLoading ? "Saving..." : (editingIndex !== null ? "Update" : "Save")}
                                 </button>
                             </div>
                         </div>

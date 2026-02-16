@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addSectionRow, deleteSectionRow, getSectionSheetName, ensureSheetsExist } from "@/lib/google-sheets";
+import { addSectionRow, updateSectionRow, deleteSectionRow, getSectionSheetName, ensureSheetsExist } from "@/lib/google-sheets";
 import { getAuthUsername } from "@/lib/auth";
 import {
     ExperienceSchema,
@@ -95,6 +95,62 @@ export async function POST(
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error("Error adding section row:", error);
+        return NextResponse.json({ error: "Server error" }, { status: 500 });
+    }
+}
+
+/**
+ * PUT /api/user/[username]/sections
+ * Body: { section: "experience" | "projects" | ..., index: number, data: { ...fields } }
+ */
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ username: string }> }
+) {
+    try {
+        const { username } = await params;
+        const authUser = await getAuthUsername(request);
+        if (!authUser || authUser.toLowerCase() !== username.toLowerCase()) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { section, index, data } = body;
+
+        if (!section || index === undefined || !data) {
+            return NextResponse.json({ error: "section, index and data are required" }, { status: 400 });
+        }
+
+        const sheetName = getSectionSheetName(section);
+        if (!sheetName) {
+            return NextResponse.json({ error: "Invalid section" }, { status: 400 });
+        }
+
+        // Ensure database integrity (sheets + headers)
+        await ensureSheetsExist(username);
+
+        // Inject username for validation
+        const fullData = { ...data, username };
+
+        // Validate with Zod
+        const schema = sectionSchemas[section];
+        if (schema) {
+            const result = schema.safeParse(fullData);
+            if (!result.success) {
+                const errors = result.error.issues.map((i: z.ZodIssue) => `${i.path.join(".")}: ${i.message}`);
+                return NextResponse.json({ error: "Validation failed", details: errors }, { status: 400 });
+            }
+        }
+
+        const success = await updateSectionRow(sheetName, username, index, fullData);
+
+        if (!success) {
+            return NextResponse.json({ error: "Failed to update row" }, { status: 500 });
+        }
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error("Error updating section row:", error);
         return NextResponse.json({ error: "Server error" }, { status: 500 });
     }
 }

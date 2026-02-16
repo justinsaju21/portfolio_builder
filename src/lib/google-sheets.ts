@@ -102,8 +102,19 @@ export const getUserByUsername = cache(async (
     for (let i = 0; i < retries; i++) {
         try {
             const doc = await getSpreadsheet();
-            const sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
-            if (!sheet) return null;
+            let sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
+
+            if (!sheet) {
+                console.warn(`Users sheet not found, attempting to initialize for ${username}...`);
+                await ensureSheetsExist(username);
+                // Re-fetch spreadsheet to get updated internal state
+                const updatedDoc = await getSpreadsheet();
+                sheet = updatedDoc.sheetsByTitle[SHEET_NAMES.USERS];
+                if (!sheet) {
+                    console.error("Critical: Users sheet still missing after initialization.");
+                    return null;
+                }
+            }
 
             const rows = await sheet.getRows();
             const userRow = rows.find(
@@ -673,6 +684,62 @@ export async function addSectionRow(
                 return false;
             }
             // Increase initial delay to 1s and use steeper backoff
+            await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, i)));
+        }
+    }
+    return false;
+}
+
+/**
+ * Update a specific row in a section sheet by index
+ */
+export async function updateSectionRow(
+    sheetName: string,
+    username: string,
+    index: number,
+    data: Record<string, unknown>,
+    retries = 3
+): Promise<boolean> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[sheetName];
+            if (!sheet) {
+                console.error(`Sheet "${sheetName}" not found for update.`);
+                return false;
+            }
+
+            const rows = await sheet.getRows();
+            const userRows = rows.filter(
+                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
+            );
+
+            if (index < 0 || index >= userRows.length) {
+                console.error(`Index ${index} out of bounds for user ${username} in ${sheetName}`);
+                return false;
+            }
+
+            const rowToUpdate = userRows[index];
+
+            // Convert data to row format
+            for (const [key, value] of Object.entries(data)) {
+                if (Array.isArray(value)) {
+                    rowToUpdate.set(key, value.join(" | "));
+                } else if (typeof value === "boolean") {
+                    rowToUpdate.set(key, value ? "true" : "false");
+                } else {
+                    rowToUpdate.set(key, String(value ?? ""));
+                }
+            }
+
+            await rowToUpdate.save();
+            return true;
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed updating row in ${sheetName}. Error:`, error);
+            if (i === retries - 1) {
+                console.error(`Final failure updating row in ${sheetName} after ${retries} attempts:`, error);
+                return false;
+            }
             await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, i)));
         }
     }

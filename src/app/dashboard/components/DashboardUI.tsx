@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trash2, ChevronUp, Plus, Check } from "lucide-react";
+import { Trash2, ChevronUp, Plus, Check, Edit2 } from "lucide-react";
 import { ReactNode } from "react";
 
 /* ─── STYLE CONSTANTS ─── */
@@ -27,9 +27,9 @@ export const SectionHeader = ({ title, subtitle }: { title: string; subtitle: st
     </div>
 );
 
-export const ItemCard = ({ title, subtitle, badges, onDelete, loading, children }: {
+export const ItemCard = ({ title, subtitle, badges, onDelete, onEdit, loading, children }: {
     title: string; subtitle: string; badges?: string[];
-    onDelete: () => void; loading: boolean; children?: ReactNode;
+    onDelete: () => void; onEdit?: () => void; loading: boolean; children?: ReactNode;
 }) => (
     <motion.div
         initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -51,18 +51,34 @@ export const ItemCard = ({ title, subtitle, badges, onDelete, loading, children 
                 )}
                 {children}
             </div>
-            <button
-                onClick={onDelete}
-                disabled={loading}
-                style={{
-                    background: "rgba(239,68,68,0.08)", border: "none", cursor: "pointer",
-                    padding: "8px", borderRadius: "10px", color: "#f87171", flexShrink: 0,
-                    transition: "all 0.2s", opacity: loading ? 0.5 : 1,
-                }}
-                title="Delete"
-            >
-                <Trash2 size={16} />
-            </button>
+            <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
+                {onEdit && (
+                    <button
+                        onClick={onEdit}
+                        disabled={loading}
+                        style={{
+                            background: "rgba(255,255,255,0.05)", border: "none", cursor: "pointer",
+                            padding: "8px", borderRadius: "10px", color: fgMuted,
+                            transition: "all 0.2s", opacity: loading ? 0.5 : 1,
+                        }}
+                        title="Edit"
+                    >
+                        <Edit2 size={16} />
+                    </button>
+                )}
+                <button
+                    onClick={onDelete}
+                    disabled={loading}
+                    style={{
+                        background: "rgba(239,68,68,0.08)", border: "none", cursor: "pointer",
+                        padding: "8px", borderRadius: "10px", color: "#f87171",
+                        transition: "all 0.2s", opacity: loading ? 0.5 : 1,
+                    }}
+                    title="Delete"
+                >
+                    <Trash2 size={16} />
+                </button>
+            </div>
         </div>
     </motion.div>
 );

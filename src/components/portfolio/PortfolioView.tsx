@@ -354,86 +354,109 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
                     {/* Desktop Nav */}
                     <div className="desktop-nav" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                        {/* Direct Links */}
-                        {["about", "experience", "projects", "skills"].map(id => {
-                            if (hiddenSections.includes(id)) return null;
-                            if (id === "skills" && !skills.length) return null;
-                            if (id === "experience" && !experience.length) return null;
-                            if (id === "projects" && !projects.length) return null;
-                            return (
-                                <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
-                                    style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", transition: "background 0.2s" }}
-                                    onMouseEnter={e => e.currentTarget.style.background = `${accent}15`}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                                >
-                                    {id.charAt(0).toUpperCase() + id.slice(1)}
-                                </button>
-                            );
-                        })}
+                        {(() => {
+                            // Definir grupos
+                            const ACADEMIC_IDS = ["education", "research", "certifications", "scholarships", "exams"];
+                            const ACHIEVEMENT_IDS = ["hackathons", "entrepreneurship", "sports_cultural"];
+                            const LEADERSHIP_IDS = ["leadership", "volunteering", "club_activities", "dept_contributions", "professional_memberships"];
 
-                        {/* Dropdown Groups */}
-                        {/* Academic Group */}
-                        {(education.length > 0 || data.research?.length > 0 || data.certifications?.length > 0 || data.scholarships?.length > 0) && (
-                            <div style={{ position: "relative" }} className="group">
-                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
-                                    Academic <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
-                                </button>
-                                <div className="dropdown-menu" style={{
-                                    position: "absolute", top: "100%", right: 0, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
-                                }}>
-                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
-                                        {education.length > 0 && <button onClick={() => document.getElementById("education")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Education</button>}
-                                        {data.research?.length > 0 && <button onClick={() => document.getElementById("research")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Research</button>}
-                                        {data.certifications?.length > 0 && <button onClick={() => document.getElementById("certifications")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Certifications</button>}
-                                        {data.scholarships?.length > 0 && <button onClick={() => document.getElementById("scholarships")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Scholarships</button>}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                            // Tracks what we've already rendered to avoid duplicates
+                            const rendered = new Set<string>();
 
-                        {/* Achievements Group */}
-                        {(data.hackathons?.length > 0 || data.entrepreneurship?.length > 0 || data.exams?.length > 0 || data.sports_cultural?.length > 0) && (
-                            <div style={{ position: "relative" }} className="group">
-                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
-                                    Achievements <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
-                                </button>
-                                <div className="dropdown-menu" style={{
-                                    position: "absolute", top: "100%", right: 0, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
-                                }}>
-                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
-                                        {data.hackathons?.length > 0 && <button onClick={() => document.getElementById("hackathons")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Hackathons</button>}
-                                        {data.entrepreneurship?.length > 0 && <button onClick={() => document.getElementById("entrepreneurship")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Ventures</button>}
-                                        {data.exams?.length > 0 && <button onClick={() => document.getElementById("exams")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Exams</button>}
-                                        {data.sports_cultural?.length > 0 && <button onClick={() => document.getElementById("sports_cultural")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Sports & Cultural</button>}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                            return sectionOrder.map(id => {
+                                if (rendered.has(id)) return null;
+                                if (hiddenSections.includes(id)) return null;
 
-                        {/* Leadership Group */}
-                        {(leadership.length > 0 || data.volunteering?.length > 0 || data.club_activities?.length > 0 || data.professional_memberships?.length > 0) && (
-                            <div style={{ position: "relative" }} className="group">
-                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
-                                    Leadership <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
-                                </button>
-                                <div className="dropdown-menu" style={{
-                                    position: "absolute", top: "100%", right: -20, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
-                                }}>
-                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
-                                        {leadership.length > 0 && <button onClick={() => document.getElementById("leadership")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Leadership</button>}
-                                        {data.club_activities?.length > 0 && <button onClick={() => document.getElementById("club_activities")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Clubs</button>}
-                                        {data.volunteering?.length > 0 && <button onClick={() => document.getElementById("volunteering")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Volunteering</button>}
-                                        {data.professional_memberships?.length > 0 && <button onClick={() => document.getElementById("professional_memberships")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Memberships</button>}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                                // Specific check for empty sections
+                                if (id !== "about" && id !== "contact" && id !== "blog") {
+                                    if (Array.isArray((data as any)[id]) && ((data as any)[id] as any[]).length === 0) return null;
+                                }
+                                if (id === "blog" && !profile.rss_url) return null;
 
-                        <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ background: accent, border: "none", cursor: "pointer", color: "white", fontSize: "0.85rem", fontWeight: 600, padding: "8px 18px", borderRadius: "100px", marginLeft: 8 }}>Contact</button>
+                                // Check if it's a grouped section
+                                let groupItems: string[] = [];
+                                let groupLabel = "";
+
+                                if (ACADEMIC_IDS.includes(id)) {
+                                    groupItems = ACADEMIC_IDS;
+                                    groupLabel = "Academic";
+                                } else if (ACHIEVEMENT_IDS.includes(id)) {
+                                    groupItems = ACHIEVEMENT_IDS;
+                                    groupLabel = "Achievements";
+                                } else if (LEADERSHIP_IDS.includes(id)) {
+                                    groupItems = LEADERSHIP_IDS;
+                                    groupLabel = "Leadership";
+                                }
+
+                                if (groupItems.length > 0) {
+                                    // Mark all items in this group as rendered
+                                    groupItems.forEach(gid => rendered.add(gid));
+
+                                    // Only show group if there's at least one visible item with data
+                                    const visibleGroupItems = groupItems.filter(gid => {
+                                        if (hiddenSections.includes(gid)) return false;
+                                        if (Array.isArray((data as any)[gid]) && ((data as any)[gid] as any[]).length > 0) return true;
+                                        if (gid === "education" && education.length > 0) return true;
+                                        return false;
+                                    });
+
+                                    if (visibleGroupItems.length === 0) return null;
+
+                                    return (
+                                        <div key={groupLabel} style={{ position: "relative" }} className="group">
+                                            <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
+                                                {groupLabel} <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
+                                            </button>
+                                            <div className="dropdown-menu" style={{
+                                                position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)", paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
+                                            }}>
+                                                <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+                                                    {visibleGroupItems.map(gid => {
+                                                        const labels: Record<string, string> = { education: "Education", research: "Research", certifications: "Certifications", scholarships: "Scholarships", exams: "Exams", hackathons: "Hackathons", entrepreneurship: "Ventures", sports_cultural: "Sports & Cultural", leadership: "Leadership", volunteering: "Volunteering", club_activities: "Clubs", dept_contributions: "Service", professional_memberships: "Memberships" };
+                                                        return (
+                                                            <button key={gid} onClick={() => document.getElementById(gid)?.scrollIntoView({ behavior: "smooth" })}
+                                                                style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }}
+                                                                onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }}
+                                                                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>
+                                                                {labels[gid] || gid}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                // Handle direct links (About, Experience, Projects, Skills, Contact, Blog, Custom)
+                                rendered.add(id);
+                                const labels: Record<string, string> = { about: "About", experience: "Experience", projects: "Projects", skills: "Skills", contact: "Contact", blog: "Blog" };
+                                const label = labels[id] || customSections.find(s => s.id === id)?.title || id;
+
+                                return (
+                                    <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
+                                        style={{
+                                            background: id === "contact" ? accent : "none",
+                                            border: "none", cursor: "pointer",
+                                            color: id === "contact" ? "white" : theme.textPrimary,
+                                            fontSize: "0.85rem", fontWeight: 600,
+                                            padding: id === "contact" ? "8px 18px" : "8px 12px",
+                                            borderRadius: id === "contact" ? "100px" : "8px",
+                                            marginLeft: id === "contact" ? 8 : 0,
+                                            transition: "all 0.2s"
+                                        }}
+                                        onMouseEnter={e => { if (id !== "contact") e.currentTarget.style.background = `${accent}15` }}
+                                        onMouseLeave={e => { if (id !== "contact") e.currentTarget.style.background = "transparent" }}
+                                    >
+                                        {label.charAt(0).toUpperCase() + label.slice(1)}
+                                    </button>
+                                );
+                            });
+                        })()}
                     </div>
 
                     {/* Mobile Menu Toggle */}
-                    <button className="mobile-only-btn" style={{ display: "none", background: "none", border: "none", color: theme.textPrimary, cursor: "pointer" }} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                    <button className="mobile-only-btn" style={{ background: "none", border: "none", color: theme.textPrimary, cursor: "pointer" }} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                         {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                     </button>
                 </div>
@@ -443,51 +466,79 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
             <AnimatePresence>
                 {mobileMenuOpen && (
                     <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-                        style={{ position: "fixed", inset: 0, zIndex: 49, background: theme.bg, paddingTop: "100px", paddingInline: "24px", overflowY: "auto" }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                            {["about", "experience", "projects", "skills"].map(id => {
-                                if (hiddenSections.includes(id)) return null;
-                                if (id === "skills" && !skills.length) return null;
-                                return (
-                                    <button key={id} onClick={() => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
-                                        style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "1.5rem", fontWeight: 700, textAlign: "left" }}>
-                                        {id.charAt(0).toUpperCase() + id.slice(1)}
-                                    </button>
-                                );
-                            })}
+                        style={{ position: "fixed", inset: 0, zIndex: 49, background: theme.bg, paddingTop: "100px", paddingInline: "24px", paddingBottom: "40px", overflowY: "auto" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+                            {(() => {
+                                const ACADEMIC_IDS = ["education", "research", "certifications", "scholarships", "exams"];
+                                const ACHIEVEMENT_IDS = ["hackathons", "entrepreneurship", "sports_cultural"];
+                                const LEADERSHIP_IDS = ["leadership", "volunteering", "club_activities", "dept_contributions", "professional_memberships"];
 
-                            {/* Academic Group Mobile */}
-                            {(education.length > 0 || data.research?.length > 0) && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Academic</h4>
-                                    {education.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("education")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Education</button>}
-                                    {data.research?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("research")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Research</button>}
-                                    {data.certifications?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("certifications")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Certifications</button>}
-                                </div>
-                            )}
+                                const rendered = new Set<string>();
 
-                            {/* Achievements Group Mobile */}
-                            {(data.hackathons?.length > 0 || data.entrepreneurship?.length > 0) && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Achievements</h4>
-                                    {data.hackathons?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("hackathons")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Hackathons</button>}
-                                    {data.entrepreneurship?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("entrepreneurship")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Ventures</button>}
-                                </div>
-                            )}
+                                return sectionOrder.map(id => {
+                                    if (rendered.has(id)) return null;
+                                    if (hiddenSections.includes(id)) return null;
 
-                            {/* Leadership Group Mobile */}
-                            {(leadership.length > 0 || data.volunteering?.length > 0) && (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Leadership</h4>
-                                    {leadership.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("leadership")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Leadership</button>}
-                                    {data.volunteering?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("volunteering")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Volunteering</button>}
-                                </div>
-                            )}
+                                    if (id !== "about" && id !== "contact" && id !== "blog") {
+                                        if (Array.isArray((data as any)[id]) && ((data as any)[id] as any[]).length === 0) return null;
+                                    }
+                                    if (id === "blog" && !profile.rss_url) return null;
 
-                            <button onClick={() => { setMobileMenuOpen(false); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}
-                                style={{ background: accent, border: "none", cursor: "pointer", color: "white", fontSize: "1.2rem", fontWeight: 700, padding: "16px", borderRadius: "12px", marginTop: 20 }}>
-                                Contact Me
-                            </button>
+                                    let groupItems: string[] = [];
+                                    let groupLabel = "";
+
+                                    if (ACADEMIC_IDS.includes(id)) { groupItems = ACADEMIC_IDS; groupLabel = "Academic"; }
+                                    else if (ACHIEVEMENT_IDS.includes(id)) { groupItems = ACHIEVEMENT_IDS; groupLabel = "Achievements"; }
+                                    else if (LEADERSHIP_IDS.includes(id)) { groupItems = LEADERSHIP_IDS; groupLabel = "Leadership"; }
+
+                                    if (groupItems.length > 0) {
+                                        groupItems.forEach(gid => rendered.add(gid));
+                                        const visibleGroupItems = groupItems.filter(gid => {
+                                            if (hiddenSections.includes(gid)) return false;
+                                            if (Array.isArray((data as any)[gid]) && ((data as any)[gid] as any[]).length > 0) return true;
+                                            if (gid === "education" && education.length > 0) return true;
+                                            return false;
+                                        });
+
+                                        if (visibleGroupItems.length === 0) return null;
+
+                                        return (
+                                            <div key={groupLabel} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                                <h4 style={{ color: accent, fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>{groupLabel}</h4>
+                                                {visibleGroupItems.map(gid => {
+                                                    const labels: Record<string, string> = { education: "Education", research: "Research", certifications: "Certifications", scholarships: "Scholarships", exams: "Exams", hackathons: "Hackathons", entrepreneurship: "Ventures", sports_cultural: "Sports & Cultural", leadership: "Leadership", volunteering: "Volunteering", club_activities: "Clubs", dept_contributions: "Service", professional_memberships: "Memberships" };
+                                                    return (
+                                                        <button key={gid} onClick={() => { setMobileMenuOpen(false); document.getElementById(gid)?.scrollIntoView({ behavior: "smooth" }) }}
+                                                            style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.25rem", fontWeight: 500, textAlign: "left", padding: "4px 0" }}>
+                                                            {labels[gid] || gid}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    }
+
+                                    rendered.add(id);
+                                    const labels: Record<string, string> = { about: "About", experience: "Experience", projects: "Projects", skills: "Skills", contact: "Contact", blog: "Blog" };
+                                    const label = labels[id] || customSections.find(s => s.id === id)?.title || id;
+
+                                    if (id === "contact") {
+                                        return (
+                                            <button key={id} onClick={() => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+                                                style={{ background: accent, border: "none", cursor: "pointer", color: "white", fontSize: "1.2rem", fontWeight: 700, padding: "16px", borderRadius: "100px", marginTop: 20 }}>
+                                                Contact Me
+                                            </button>
+                                        );
+                                    }
+
+                                    return (
+                                        <button key={id} onClick={() => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+                                            style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "1.5rem", fontWeight: 700, textAlign: "left" }}>
+                                            {label.charAt(0).toUpperCase() + label.slice(1)}
+                                        </button>
+                                    );
+                                });
+                            })()}
                         </div>
                     </motion.div>
                 )}
