@@ -200,8 +200,13 @@ export default function LayoutTab({
 
                                 {/* Content Editors */}
                                 {newSection.type === "text" ? (
-                                    <Textarea label="Content (Markdown)" value={newSection.content || ""} onChange={(v) => setNewSection({ ...newSection, content: v })} rows={8}
-                                        placeholder="## Hello World\nWrite something amazing about yourself..." />
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                        <Textarea label="Content (Markdown)" value={newSection.content || ""} onChange={(v) => setNewSection({ ...newSection, content: v })} rows={8}
+                                            placeholder={"## Hello World\nI am a **developer**.\n\nCheck out my [Website](https://example.com) or contact me!"} />
+                                        <span style={{ fontSize: "0.8rem", color: fgMuted }}>
+                                            Supports Markdown: <code style={{ background: glassBg, padding: "2px 4px", borderRadius: 4 }}>[Link Text](url)</code>, <strong>**Bold**</strong>, <em>*Italic*</em>, etc.
+                                        </span>
+                                    </div>
                                 ) : (
                                     /* List/Grid Item Builder */
                                     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>

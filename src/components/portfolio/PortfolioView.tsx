@@ -426,7 +426,10 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         <SectionWrapper key={id} id={id} title={custom.title} accent={accent} dividerStyle={divider}>
                             {custom.type === "text" && (
                                 <div style={{ color: theme.textMuted, lineHeight: 1.7 }}>
-                                    <ReactMarkdown>{custom.content}</ReactMarkdown>
+                                    <ReactMarkdown components={{
+                                        a: ({ node, ...props }) => <a {...props} style={{ color: accent, textDecoration: "underline", fontWeight: 500 }} target="_blank" rel="noopener noreferrer" />,
+                                        strong: ({ node, ...props }) => <strong {...props} style={{ color: theme.textPrimary, fontWeight: 700 }} />,
+                                    }}>{custom.content}</ReactMarkdown>
                                 </div>
                             )}
 
