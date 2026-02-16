@@ -395,3 +395,77 @@ body {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+
+/* ═══════════════════════════════════════════
+   PRINT STYLES — For PDF Export / Resume Mode
+   ═══════════════════════════════════════════ */
+@media print {
+  @page {
+    margin: 1cm;
+    size: auto;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide interactive elements */
+  header,
+  .back-to-top,
+  button,
+  .no-print,
+  .noise-overlay,
+  .glow-orb {
+    display: none !important;
+  }
+
+  /* Flatten layout for print */
+  section {
+    padding: 20px 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .portfolio-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Cards become flat text blocks */
+  .card,
+  .glass-card,
+  div[style*="cardBg"],
+  div[style*="glassBg"] {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    color: black !important;
+    padding: 10px 0 !important;
+    page-break-inside: avoid;
+  }
+
+  /* Force high contrast text */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span,
+  li,
+  a {
+    color: #000 !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* Links */
+  a {
+    text-decoration: underline;
+    color: #000 !important;
+  }
+}

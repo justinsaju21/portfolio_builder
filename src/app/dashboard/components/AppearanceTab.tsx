@@ -3,7 +3,7 @@
 import { Palette, Check, Zap, Code } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { SectionHeader, Select, Textarea, Checkbox } from "./DashboardUI";
-import { PROFILE_THEMES } from "@/lib/themes";
+import { PORTFOLIO_THEMES } from "@/lib/themes";
 
 const accent = "#6366f1";
 const accent2 = "#14b8a6";
@@ -36,24 +36,23 @@ export default function AppearanceTab({ profileData, setProfileData }: Appearanc
                     <Palette style={{ width: 16, height: 16, color: accent }} /> Choose a Theme
                 </h3>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 16 }}>
-                    {PROFILE_THEMES.map(theme => (
+                    {Object.values(PORTFOLIO_THEMES).map(theme => (
                         <button key={theme.id}
                             onClick={() => setProfileData({
                                 ...profileData,
-                                primary_color: theme.colors.primary,
-                                secondary_color: theme.colors.secondary,
-                                bg_color: theme.colors.bg,
-                                surface_color: theme.colors.surface,
-                                text_primary: theme.colors.text,
-                                text_muted: theme.colors.muted,
-                                heading_font: theme.font === "inter" ? "Inter" : theme.font === "playfair" ? "Playfair Display" : theme.font === "space_grotesk" ? "Space Grotesk" : theme.font === "jetbrains" ? "JetBrains Mono" : "Inter",
-                                body_font: theme.font === "inter" ? "Inter" : theme.font === "playfair" ? "Lora" : theme.font === "space_grotesk" ? "Inter" : theme.font === "jetbrains" ? "JetBrains Mono" : "Inter",
-                                button_style: "solid",
-                                card_style: theme.id === "glass" ? "glass" : "solid",
+                                color_theme: theme.id,
+                                // Update granular colors for backward compatibility / fine-tuning
+                                primary_color: theme.textDim, // Approximation for accent
+                                secondary_color: theme.textMuted,
+                                bg_color: theme.bg,
+                                surface_color: theme.surface,
+                                text_primary: theme.textPrimary,
+                                text_muted: theme.textMuted,
+                                card_style: "glass", // Default to glass for all new themes
                             })}
                             style={{
-                                background: theme.colors.bg,
-                                border: `2px solid ${profileData.primary_color === theme.colors.primary && profileData.bg_color === theme.colors.bg ? accent : glassBorder}`,
+                                background: theme.bg,
+                                border: `2px solid ${profileData.color_theme === theme.id ? accent : glassBorder}`,
                                 borderRadius: 12, padding: 12, cursor: "pointer", textAlign: "left",
                                 position: "relative", overflow: "hidden", minHeight: 80,
                                 transition: "transform 0.2s, border-color 0.2s",
@@ -61,9 +60,9 @@ export default function AppearanceTab({ profileData, setProfileData }: Appearanc
                             onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
                             onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
                         >
-                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.secondary})`, marginBottom: 12 }} />
-                            <p style={{ fontWeight: 600, fontSize: "0.85rem", color: theme.colors.text }}>{theme.name}</p>
-                            {profileData.primary_color === theme.colors.primary && profileData.bg_color === theme.colors.bg && (
+                            <div style={{ width: 24, height: 24, borderRadius: "50%", background: `linear-gradient(135deg, ${theme.textDim}, ${theme.textMuted})`, marginBottom: 12 }} />
+                            <p style={{ fontWeight: 600, fontSize: "0.85rem", color: theme.textPrimary }}>{theme.label}</p>
+                            {profileData.color_theme === theme.id && (
                                 <div style={{ position: "absolute", top: 8, right: 8, background: accent, borderRadius: "50%", padding: 2 }}>
                                     <Check size={10} color="white" />
                                 </div>

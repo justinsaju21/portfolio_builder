@@ -48,13 +48,7 @@ const FONT_URLS: Record<string, string> = {
     "dm serif display": "https://fonts.googleapis.com/css2?family=DM+Serif+Display:wght@400&display=swap",
 };
 
-const THEMES: Record<string, any> = {
-    light: { bg: "#ffffff", surface: "#f8fafc", textPrimary: "#0f172a", textMuted: "#475569", textDim: "#94a3b8", glassBg: "rgba(15, 23, 42, 0.03)", glassBorder: "rgba(15, 23, 42, 0.08)", cardBg: "#ffffff", navBg: "rgba(255, 255, 255, 0.85)" },
-    dark: { bg: "#030310", surface: "rgba(255,255,255,0.03)", textPrimary: "#e2e8f0", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.06)", cardBg: "rgba(20,20,40,0.92)", navBg: "rgba(10, 10, 30, 0.6)" },
-    midnight: { bg: "#020617", surface: "#0f172a", textPrimary: "#f8fafc", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(30, 41, 59, 0.4)", glassBorder: "rgba(51, 65, 85, 0.5)", cardBg: "#0f172a", navBg: "rgba(15, 23, 42, 0.7)" },
-    sunset: { bg: "#1a0b1c", surface: "#2d1b2e", textPrimary: "#fae8ff", textMuted: "#d8b4fe", textDim: "#a855f7", glassBg: "rgba(88, 28, 135, 0.1)", glassBorder: "rgba(168, 85, 247, 0.2)", cardBg: "#2d1b2e", navBg: "rgba(45, 27, 46, 0.7)" },
-    glass: { bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", surface: "rgba(255,255,255,0.05)", textPrimary: "#ffffff", textMuted: "#cbd5e1", textDim: "#94a3b8", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.1)", cardBg: "rgba(255,255,255,0.02)", navBg: "rgba(15, 23, 42, 0.6)" }
-};
+import { PORTFOLIO_THEMES } from "@/lib/themes";
 
 /* ─── Helpers ─── */
 function getImageUrl(url: string | undefined): string | null {
@@ -92,24 +86,31 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const { profile, experiences, projects, skills, education, leadership, customSections, sectionOrder, hiddenSections } = data;
     const profileImg = getImageUrl(profile.profile_image);
 
-    // Theme state
-    const [currentTheme, setCurrentTheme] = useState<string>(profile.color_theme || "dark");
-    const themeBase = THEMES[currentTheme] || THEMES.dark;
-    const isBaseTheme = currentTheme === (profile.color_theme || "dark");
-    const toggleTheme = () => setCurrentTheme(prev => prev === "light" ? "dark" : "light");
+    // Theme Resolution
+    // Use the profile's selected theme ID, defaulting to 'dark' if invalid or missing
+    const themeId = profile.color_theme || "dark";
+    const themeBase = PORTFOLIO_THEMES[themeId] || PORTFOLIO_THEMES.dark;
+    const currentTheme = themeId;
+
+    // We strictly use the selected theme, no toggling allowed on public view.
+    // Backward compatibility: If no theme ID (old profiles), it might fall back to dark logic
+    // but the dashboard rewrite ensures new saves have IDs.
 
     // Resolved Theme Colors
-    const accent = profile.primary_color || "#818cf8";
-    const accent2 = profile.secondary_color || "#14b8a6";
+    // Resolved Theme Colors
+    const accent = profile.primary_color || themeBase.textDim;
+    const accent2 = profile.secondary_color || themeBase.textMuted;
+
+    // ─── Theme Values ───
     const theme = {
-        bg: isBaseTheme ? (profile.bg_color || themeBase.bg) : themeBase.bg,
-        surface: isBaseTheme ? (profile.surface_color || themeBase.surface) : themeBase.surface,
-        textPrimary: isBaseTheme ? (profile.text_primary || themeBase.textPrimary) : themeBase.textPrimary,
-        textMuted: isBaseTheme ? (profile.text_muted || themeBase.textMuted) : themeBase.textMuted,
-        textDim: isBaseTheme ? (profile.text_dim || themeBase.textDim) : themeBase.textDim,
-        glassBg: isBaseTheme ? (profile.surface_color || themeBase.glassBg) : themeBase.glassBg,
+        bg: profile.bg_color || themeBase.bg,
+        surface: profile.surface_color || themeBase.surface,
+        textPrimary: profile.text_primary || themeBase.textPrimary,
+        textMuted: profile.text_muted || themeBase.textMuted,
+        textDim: profile.text_dim || themeBase.textDim,
+        glassBg: themeBase.glassBg,
         glassBorder: themeBase.glassBorder,
-        cardBg: isBaseTheme ? (profile.surface_color || themeBase.cardBg) : themeBase.cardBg,
+        cardBg: themeBase.cardBg,
         navBg: themeBase.navBg,
     };
 
@@ -351,9 +352,6 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         {navLinks.map(l => (
                             <button key={l.id} onClick={() => document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600 }}>{l.label}</button>
                         ))}
-                        <button onClick={toggleTheme} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary }}>
-                            {currentTheme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-                        </button>
                     </div>
                 </div>
             </header>
