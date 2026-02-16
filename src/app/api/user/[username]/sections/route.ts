@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addSectionRow, deleteSectionRow, getSectionSheetName } from "@/lib/google-sheets";
+import { getAuthUsername } from "@/lib/auth";
 import {
     ExperienceSchema,
     ProjectSchema,
     SkillSchema,
     EducationSchema,
     LeadershipSchema,
+    HackathonSchema,
+    ResearchSchema,
+    EntrepreneurshipSchema,
+    CertificationSchema,
+    ExamSchema,
+    SportsCulturalSchema,
+    VolunteeringSchema,
+    ScholarshipSchema,
+    ClubActivitySchema,
+    DeptContributionSchema,
+    ProfessionalMembershipSchema,
+    ReferenceSchema,
 } from "@/lib/types";
 import { z } from "zod";
 
@@ -16,6 +29,18 @@ const sectionSchemas: Record<string, z.ZodTypeAny> = {
     skills: SkillSchema,
     education: EducationSchema,
     leadership: LeadershipSchema,
+    hackathons: HackathonSchema,
+    research: ResearchSchema,
+    entrepreneurship: EntrepreneurshipSchema,
+    certifications: CertificationSchema,
+    exams: ExamSchema,
+    sports_cultural: SportsCulturalSchema,
+    volunteering: VolunteeringSchema,
+    scholarships: ScholarshipSchema,
+    club_activities: ClubActivitySchema,
+    dept_contributions: DeptContributionSchema,
+    professional_memberships: ProfessionalMembershipSchema,
+    references: ReferenceSchema,
 };
 
 /**
@@ -28,6 +53,11 @@ export async function POST(
 ) {
     try {
         const { username } = await params;
+        const authUser = await getAuthUsername(request);
+        if (!authUser || authUser.toLowerCase() !== username.toLowerCase()) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await request.json();
         const { section, data } = body;
 
@@ -76,6 +106,11 @@ export async function DELETE(
 ) {
     try {
         const { username } = await params;
+        const authUser = await getAuthUsername(request);
+        if (!authUser || authUser.toLowerCase() !== username.toLowerCase()) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await request.json();
         const { section, index } = body;
 

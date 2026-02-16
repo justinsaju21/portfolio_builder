@@ -13,6 +13,7 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [step, setStep] = useState<"form" | "success">("form");
+    const [createdUsername, setCreatedUsername] = useState("");
     const [formData, setFormData] = useState({
         username: "",
         full_name: "",
@@ -56,6 +57,9 @@ export default function SignupPage() {
                 setError(data.error || "Signup failed");
                 return;
             }
+            const canonicalUsername = data.username || formData.username.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+            setCreatedUsername(canonicalUsername);
+            setFormData((prev) => ({ ...prev, username: canonicalUsername }));
             setStep("success");
         } catch (err) {
             setError("Something went wrong. Please try again.");
@@ -178,12 +182,12 @@ export default function SignupPage() {
                                 <div>
                                     <Input
                                         label="Choose a Username"
-                                        placeholder="yourname (lowercase, no spaces)"
+                                        placeholder="yourname (letters, numbers, _ -)"
                                         value={formData.username}
                                         onChange={(e) =>
                                             setFormData({
                                                 ...formData,
-                                                username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ""),
+                                                username: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""),
                                             })
                                         }
                                         icon={<User style={{ width: "18px", height: "18px" }} />}
@@ -229,7 +233,7 @@ export default function SignupPage() {
                                         label="Create PIN"
                                         type="password"
                                         placeholder="••••"
-                                        maxLength={6}
+                                        maxLength={20}
                                         value={formData.pin}
                                         onChange={(e) =>
                                             setFormData({
@@ -244,7 +248,7 @@ export default function SignupPage() {
                                         label="Confirm PIN"
                                         type="password"
                                         placeholder="••••"
-                                        maxLength={6}
+                                        maxLength={20}
                                         value={formData.confirm_pin}
                                         onChange={(e) =>
                                             setFormData({
@@ -342,18 +346,37 @@ export default function SignupPage() {
                             }}
                         >
                             <code style={{ color: "#818cf8", fontFamily: "monospace", fontSize: "0.95rem" }}>
-                                portfoliohub.com/{formData.username}
+                                your-site.com/{createdUsername || formData.username}
                             </code>
                         </div>
 
                         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                            <Link href="/login">
-                                <Button style={{ width: "100%" }}>
-                                    Login to Dashboard
-                                    <ArrowRight style={{ width: "18px", height: "18px" }} />
-                                </Button>
-                            </Link>
-                            <Link href={`/${formData.username}`}>
+                            <Button
+                                style={{ width: "100%" }}
+                                onClick={async () => {
+                                    setLoading(true);
+                                    try {
+                                        const loginRes = await fetch("/api/auth/login", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ username: createdUsername, pin: formData.pin }),
+                                        });
+                                        const loginData = await loginRes.json();
+                                        if (loginRes.ok && loginData.username) {
+                                            localStorage.setItem("portfolio_user", loginData.username);
+                                            router.push("/dashboard");
+                                            return;
+                                        }
+                                    } catch { /* fallback to login page */ }
+                                    setLoading(false);
+                                    router.push("/login");
+                                }}
+                                loading={loading}
+                            >
+                                Go to Dashboard
+                                <ArrowRight style={{ width: "18px", height: "18px" }} />
+                            </Button>
+                            <Link href={`/${createdUsername || formData.username}`}>
                                 <Button variant="secondary" style={{ width: "100%" }}>
                                     View Your Portfolio
                                 </Button>

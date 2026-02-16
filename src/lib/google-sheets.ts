@@ -1,6 +1,7 @@
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
 import { cache } from "react";
+import { z } from "zod";
 import {
     UserProfile,
     Experience,
@@ -17,6 +18,19 @@ import {
     EducationSchema,
     LeadershipSchema,
     CustomSectionSchema,
+    // New Schemas
+    HackathonSchema,
+    ResearchSchema,
+    EntrepreneurshipSchema,
+    CertificationSchema,
+    ExamSchema,
+    SportsCulturalSchema,
+    VolunteeringSchema,
+    ScholarshipSchema,
+    ClubActivitySchema,
+    DeptContributionSchema,
+    ProfessionalMembershipSchema,
+    ReferenceSchema,
 } from "./types";
 
 // Environment variables
@@ -32,6 +46,19 @@ const SHEET_NAMES = {
     SKILLS: "Skills",
     EDUCATION: "Education",
     LEADERSHIP: "Leadership",
+    // New Sections
+    HACKATHONS: "Hackathons",
+    RESEARCH: "Research",
+    ENTREPRENEURSHIP: "Entrepreneurship",
+    CERTIFICATIONS: "Certifications",
+    EXAMS: "CompetitiveExams",
+    SPORTS_CULTURAL: "SportsCultural",
+    VOLUNTEERING: "Volunteering",
+    SCHOLARSHIPS: "Scholarships",
+    CLUB_ACTIVITIES: "ClubActivities",
+    DEPT_CONTRIBUTIONS: "DeptContributions",
+    PROFESSIONAL_MEMBERSHIPS: "ProfessionalMemberships",
+    REFERENCES: "References",
 };
 
 /**
@@ -60,6 +87,10 @@ const getSpreadsheet = cache(async (): Promise<GoogleSpreadsheet> => {
         throw error;
     }
 });
+
+// ... (Existing fetchers for User, Experience, Projects, Skills, Education, Leadership remain unchanged)
+// I will keep them but need to skip them in replacement to avoid huge diff.
+// Actually, I can just append the new fetchers before getPortfolioData and then update getPortfolioData.
 
 /**
  * Get user profile by username
@@ -114,6 +145,12 @@ export const getUserByUsername = cache(async (
             container_width: userRow.get("container_width") || "normal",
             custom_css: userRow.get("custom_css") || "",
             color_theme: userRow.get("color_theme") || "dark",
+            // Premium Features
+            rss_url: userRow.get("rss_url") || "",
+            google_analytics_id: userRow.get("google_analytics_id") || "",
+            status_badge: userRow.get("status_badge") || "none",
+            timeline_view: userRow.get("timeline_view")?.toLowerCase() === "true",
+            github_fetching: userRow.get("github_fetching")?.toLowerCase() === "true",
         };
 
         // Validate with Zod
@@ -275,12 +312,12 @@ export const getLeadershipByUsername = cache(async (
 
         const rows = await sheet.getRows();
         return rows
-            .filter((row) => row.get("username") === username)
+            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
             .map((row) => {
                 const rawData = {
-                    username: row.get("username"),
-                    title: row.get("title"),
-                    organization: row.get("organization"),
+                    username: row.get("username") || "",
+                    title: row.get("title") || "",
+                    organization: row.get("organization") || "",
                     description: row.get("description") || "",
                     achievements: parseList(row.get("achievements")),
                     type: row.get("type") || "club",
@@ -295,6 +332,160 @@ export const getLeadershipByUsername = cache(async (
 });
 
 /**
+ * Generic helper to fetch section data
+ */
+async function fetchSectionData<T>(
+    sheetTitle: string,
+    username: string,
+    schema: z.ZodType<T>,
+    mapFn: (row: any) => any
+): Promise<T[]> {
+    try {
+        const doc = await getSpreadsheet();
+        const sheet = doc.sheetsByTitle[sheetTitle];
+        if (!sheet) return [];
+
+        const rows = await sheet.getRows();
+        return rows
+            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
+            .map((row) => {
+                const rawData = mapFn(row);
+                const result = schema.safeParse(rawData);
+                return result.success ? result.data : (rawData as T);
+            });
+    } catch (error) {
+        console.error(`Error fetching ${sheetTitle}:`, error);
+        return [];
+    }
+}
+
+// ===== NEW FETCHERS =====
+
+export const getHackathonsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.HACKATHONS, username, HackathonSchema, (row) => ({
+        username: row.get("username") || "",
+        name: row.get("name") || "",
+        project_built: row.get("project_built") || "",
+        team_size: String(row.get("team_size") || "1"),
+        position: row.get("position") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getResearchByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.RESEARCH, username, ResearchSchema, (row) => ({
+        username: row.get("username") || "",
+        title: row.get("title") || "",
+        journal_conference: row.get("journal_conference") || "",
+        index_status: row.get("index_status") || "none",
+        publication_status: row.get("publication_status") || "under_review",
+        link: row.get("link") || "",
+    }));
+});
+
+export const getEntrepreneurshipByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.ENTREPRENEURSHIP, username, EntrepreneurshipSchema, (row) => ({
+        username: row.get("username") || "",
+        startup_name: row.get("startup_name") || "",
+        registration_details: row.get("registration_details") || "",
+        revenue_funding: row.get("revenue_funding") || "",
+        description: row.get("description") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getCertificationsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.CERTIFICATIONS, username, CertificationSchema, (row) => ({
+        username: row.get("username") || "",
+        provider: row.get("provider") || "",
+        certificate_name: row.get("certificate_name") || "",
+        validation_id: row.get("validation_id") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getExamsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.EXAMS, username, ExamSchema, (row) => ({
+        username: row.get("username") || "",
+        exam_name: row.get("exam_name") || "",
+        score_rank: row.get("score_rank") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getSportsCulturalByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.SPORTS_CULTURAL, username, SportsCulturalSchema, (row) => ({
+        username: row.get("username") || "",
+        event_name: row.get("event_name") || "",
+        level: row.get("level") || "zone",
+        position_won: row.get("position_won") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getVolunteeringByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.VOLUNTEERING, username, VolunteeringSchema, (row) => ({
+        username: row.get("username") || "",
+        organization: row.get("organization") || "",
+        role: row.get("role") || "",
+        hours_served: String(row.get("hours_served") || ""),
+        impact: row.get("impact") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getScholarshipsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.SCHOLARSHIPS, username, ScholarshipSchema, (row) => ({
+        username: row.get("username") || "",
+        name: row.get("name") || "",
+        awarding_body: row.get("awarding_body") || "",
+        amount_prestige: row.get("amount_prestige") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getClubActivitiesByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.CLUB_ACTIVITIES, username, ClubActivitySchema, (row) => ({
+        username: row.get("username") || "",
+        club_name: row.get("club_name") || "",
+        position: row.get("position") || "",
+        key_events: row.get("key_events") || "",
+        impact_description: row.get("impact_description") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getDeptContributionsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.DEPT_CONTRIBUTIONS, username, DeptContributionSchema, (row) => ({
+        username: row.get("username") || "",
+        event_name: row.get("event_name") || "",
+        role: row.get("role") || "",
+        contribution_description: row.get("contribution_description") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getProfessionalMembershipsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS, username, ProfessionalMembershipSchema, (row) => ({
+        username: row.get("username") || "",
+        organization: row.get("organization") || "",
+        membership_id: row.get("membership_id") || "",
+        role: row.get("role") || "",
+        proof_link: row.get("proof_link") || "",
+    }));
+});
+
+export const getReferencesByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.REFERENCES, username, ReferenceSchema, (row) => ({
+        username: row.get("username") || "",
+        faculty_name: row.get("faculty_name") || "",
+        contact: row.get("contact") || "",
+        lor_link: row.get("lor_link") || "",
+    }));
+});
+
+
+/**
  * Get complete portfolio data for a user
  * Fully memoized to ensure multiple calls in the same request (metadata + page) are free
  */
@@ -304,16 +495,34 @@ export const getPortfolioData = cache(async (
     const profile = await getUserByUsername(username);
     if (!profile) return null;
 
-    const [experiences, projects, skills, education, leadership] = await Promise.all([
+    const [
+        experiences, projects, skills, education, leadership,
+        hackathons, research, entrepreneurship, certifications, exams,
+        sports_cultural, volunteering, scholarships, club_activities,
+        dept_contributions, professional_memberships, references
+    ] = await Promise.all([
         getExperiencesByUsername(username),
         getProjectsByUsername(username),
         getSkillsByUsername(username),
         getEducationByUsername(username),
         getLeadershipByUsername(username),
+        // New sections
+        getHackathonsByUsername(username),
+        getResearchByUsername(username),
+        getEntrepreneurshipByUsername(username),
+        getCertificationsByUsername(username),
+        getExamsByUsername(username),
+        getSportsCulturalByUsername(username),
+        getVolunteeringByUsername(username),
+        getScholarshipsByUsername(username),
+        getClubActivitiesByUsername(username),
+        getDeptContributionsByUsername(username),
+        getProfessionalMembershipsByUsername(username),
+        getReferencesByUsername(username),
     ]);
 
     // Parse custom sections from JSON string
-    let customSections: CustomSection[] = [];
+    const customSections: CustomSection[] = [];
     try {
         const parsed = JSON.parse(profile.custom_sections || "[]");
         if (Array.isArray(parsed)) {
@@ -348,6 +557,19 @@ export const getPortfolioData = cache(async (
         customSections,
         sectionOrder,
         hiddenSections,
+        // New sections
+        hackathons,
+        research,
+        entrepreneurship,
+        certifications,
+        exams,
+        sports_cultural,
+        volunteering,
+        scholarships,
+        club_activities,
+        dept_contributions,
+        professional_memberships,
+        references,
     };
 });
 
@@ -467,6 +689,12 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
             container_width: profile.container_width || "normal",
             custom_css: profile.custom_css || "",
             color_theme: profile.color_theme || "dark",
+            // Premium Features
+            rss_url: profile.rss_url || "",
+            google_analytics_id: profile.google_analytics_id || "",
+            status_badge: profile.status_badge || "none",
+            timeline_view: profile.timeline_view ? "true" : "false",
+            github_fetching: profile.github_fetching ? "true" : "false",
         });
 
         return true;
@@ -547,8 +775,58 @@ export function getSectionSheetName(section: string): string | null {
         skills: SHEET_NAMES.SKILLS,
         education: SHEET_NAMES.EDUCATION,
         leadership: SHEET_NAMES.LEADERSHIP,
+        hackathons: SHEET_NAMES.HACKATHONS,
+        research: SHEET_NAMES.RESEARCH,
+        entrepreneurship: SHEET_NAMES.ENTREPRENEURSHIP,
+        certifications: SHEET_NAMES.CERTIFICATIONS,
+        exams: SHEET_NAMES.EXAMS,
+        sports_cultural: SHEET_NAMES.SPORTS_CULTURAL,
+        volunteering: SHEET_NAMES.VOLUNTEERING,
+        scholarships: SHEET_NAMES.SCHOLARSHIPS,
+        club_activities: SHEET_NAMES.CLUB_ACTIVITIES,
+        dept_contributions: SHEET_NAMES.DEPT_CONTRIBUTIONS,
+        professional_memberships: SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS,
+        references: SHEET_NAMES.REFERENCES,
     };
     return map[section] || null;
+}
+
+/**
+ * Ensure all required sheets exist with proper headers
+ */
+export async function ensureSheetsExist(username: string): Promise<string[]> {
+    try {
+        const doc = await getSpreadsheet();
+        const addedSheets: string[] = [];
+
+        // Definition of headers for each new sheet
+        const schemas: Record<string, string[]> = {
+            [SHEET_NAMES.HACKATHONS]: ["username", "name", "project_built", "team_size", "position", "proof_link"],
+            [SHEET_NAMES.RESEARCH]: ["username", "title", "journal_conference", "index_status", "publication_status", "link"],
+            [SHEET_NAMES.ENTREPRENEURSHIP]: ["username", "startup_name", "registration_details", "revenue_funding", "description", "proof_link"],
+            [SHEET_NAMES.CERTIFICATIONS]: ["username", "provider", "certificate_name", "validation_id", "proof_link"],
+            [SHEET_NAMES.EXAMS]: ["username", "exam_name", "score_rank", "proof_link"],
+            [SHEET_NAMES.SPORTS_CULTURAL]: ["username", "event_name", "level", "position_won", "proof_link"],
+            [SHEET_NAMES.VOLUNTEERING]: ["username", "organization", "role", "hours_served", "impact", "proof_link"],
+            [SHEET_NAMES.SCHOLARSHIPS]: ["username", "name", "awarding_body", "amount_prestige", "proof_link"],
+            [SHEET_NAMES.CLUB_ACTIVITIES]: ["username", "club_name", "position", "key_events", "impact_description", "proof_link"],
+            [SHEET_NAMES.DEPT_CONTRIBUTIONS]: ["username", "event_name", "role", "contribution_description", "proof_link"],
+            [SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS]: ["username", "organization", "membership_id", "role", "proof_link"],
+            [SHEET_NAMES.REFERENCES]: ["username", "faculty_name", "contact", "lor_link"],
+        };
+
+        for (const [title, headers] of Object.entries(schemas)) {
+            if (!doc.sheetsByTitle[title]) {
+                await doc.addSheet({ title, headerValues: headers });
+                addedSheets.push(title);
+            }
+        }
+
+        return addedSheets;
+    } catch (error) {
+        console.error("Error ensuring sheets exist:", error);
+        return [];
+    }
 }
 
 // Helper to parse comma-separated or pipe-separated lists

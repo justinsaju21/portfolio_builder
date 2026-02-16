@@ -38,6 +38,12 @@ export const UserProfileSchema = z.object({
     container_width: z.enum(["narrow", "normal", "wide"]).default("normal"),
     custom_css: z.string().default(""),
     color_theme: z.enum(["light", "dark", "midnight", "glass", "sunset"]).default("dark"),
+    // Premium Features
+    rss_url: z.string().default(""),
+    google_analytics_id: z.string().default(""),
+    status_badge: z.enum(["none", "open_to_work", "freelance", "hiring"]).default("none"),
+    timeline_view: z.boolean().default(false),
+    github_fetching: z.boolean().default(false),
 });
 
 export const ExperienceSchema = z.object({
@@ -87,6 +93,107 @@ export const LeadershipSchema = z.object({
     type: z.enum(["club", "academic", "volunteer", "competition"]).default("club"),
 });
 
+// BO Student Prebuilt Sections
+
+export const HackathonSchema = z.object({
+    username: z.string(),
+    name: z.string().min(1),
+    project_built: z.string().min(1),
+    team_size: z.string().optional(), // store as string in sheets
+    position: z.string().min(1),
+    proof_link: z.string().optional(),
+});
+
+export const ResearchSchema = z.object({
+    username: z.string(),
+    title: z.string().min(1),
+    journal_conference: z.string().min(1),
+    index_status: z.enum(["scopus", "sci", "ugc", "other", "none"]).default("none"),
+    publication_status: z.enum(["filed", "published", "granted", "under_review"]).default("under_review"),
+    link: z.string().optional(),
+});
+
+export const EntrepreneurshipSchema = z.object({
+    username: z.string(),
+    startup_name: z.string().min(1),
+    registration_details: z.string().optional(),
+    revenue_funding: z.string().optional(),
+    description: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const CertificationSchema = z.object({
+    username: z.string(),
+    provider: z.string().min(1),
+    certificate_name: z.string().min(1),
+    validation_id: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const ExamSchema = z.object({
+    username: z.string(),
+    exam_name: z.string().min(1),
+    score_rank: z.string().min(1),
+    proof_link: z.string().optional(),
+});
+
+export const SportsCulturalSchema = z.object({
+    username: z.string(),
+    event_name: z.string().min(1),
+    level: z.enum(["zone", "district", "state", "national", "international"]).default("zone"),
+    position_won: z.string().min(1),
+    proof_link: z.string().optional(),
+});
+
+export const VolunteeringSchema = z.object({
+    username: z.string(),
+    organization: z.string().min(1),
+    role: z.string().min(1),
+    hours_served: z.string().optional(),
+    impact: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const ScholarshipSchema = z.object({
+    username: z.string(),
+    name: z.string().min(1),
+    awarding_body: z.string().min(1),
+    amount_prestige: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const ClubActivitySchema = z.object({
+    username: z.string(),
+    club_name: z.string().min(1),
+    position: z.string().min(1),
+    key_events: z.string().optional(),
+    impact_description: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const DeptContributionSchema = z.object({
+    username: z.string(),
+    event_name: z.string().min(1),
+    role: z.string().min(1),
+    contribution_description: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const ProfessionalMembershipSchema = z.object({
+    username: z.string(),
+    organization: z.string().min(1),
+    membership_id: z.string().optional(),
+    role: z.string().optional(),
+    proof_link: z.string().optional(),
+});
+
+export const ReferenceSchema = z.object({
+    username: z.string(),
+    faculty_name: z.string().min(1),
+    contact: z.string().min(1),
+    lor_link: z.string().optional(),
+});
+
 // Custom Section Schema
 const CustomItemSchema = z.object({
     title: z.string().min(1),
@@ -114,6 +221,20 @@ export type Education = z.infer<typeof EducationSchema>;
 export type Leadership = z.infer<typeof LeadershipSchema>;
 export type CustomSection = z.infer<typeof CustomSectionSchema>;
 
+// New Types
+export type Hackathon = z.infer<typeof HackathonSchema>;
+export type Research = z.infer<typeof ResearchSchema>;
+export type Entrepreneurship = z.infer<typeof EntrepreneurshipSchema>;
+export type Certification = z.infer<typeof CertificationSchema>;
+export type Exam = z.infer<typeof ExamSchema>;
+export type SportsCultural = z.infer<typeof SportsCulturalSchema>;
+export type Volunteering = z.infer<typeof VolunteeringSchema>;
+export type Scholarship = z.infer<typeof ScholarshipSchema>;
+export type ClubActivity = z.infer<typeof ClubActivitySchema>;
+export type DeptContribution = z.infer<typeof DeptContributionSchema>;
+export type ProfessionalMembership = z.infer<typeof ProfessionalMembershipSchema>;
+export type Reference = z.infer<typeof ReferenceSchema>;
+
 export interface PortfolioData {
     profile: UserProfile;
     experiences: Experience[];
@@ -124,4 +245,17 @@ export interface PortfolioData {
     customSections: CustomSection[];
     sectionOrder: string[];
     hiddenSections: string[];
+    // New Sections
+    hackathons: Hackathon[];
+    research: Research[];
+    entrepreneurship: Entrepreneurship[];
+    certifications: Certification[];
+    exams: Exam[];
+    sports_cultural: SportsCultural[];
+    volunteering: Volunteering[];
+    scholarships: Scholarship[];
+    club_activities: ClubActivity[];
+    dept_contributions: DeptContribution[];
+    professional_memberships: ProfessionalMembership[];
+    references: Reference[];
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyLogin } from "@/lib/google-sheets";
+import { sessionCookieHeader } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
     try {
@@ -22,7 +23,11 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ success: true, username });
+        const normalizedUsername = username.toLowerCase().trim();
+        const response = NextResponse.json({ success: true, username: normalizedUsername });
+        const { name, value, options } = sessionCookieHeader(normalizedUsername);
+        response.cookies.set(name, value, options);
+        return response;
     } catch (error) {
         console.error("Login error:", error);
         return NextResponse.json(

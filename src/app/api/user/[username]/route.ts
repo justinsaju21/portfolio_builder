@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPortfolioData, updateUserProfile } from "@/lib/google-sheets";
+import { getAuthUsername } from "@/lib/auth";
 
 export async function GET(
     request: NextRequest,
@@ -35,6 +36,11 @@ export async function PUT(
 
         if (!username) {
             return NextResponse.json({ error: "Username is required" }, { status: 400 });
+        }
+
+        const authUser = await getAuthUsername(request);
+        if (!authUser || authUser.toLowerCase() !== username.toLowerCase()) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         const success = await updateUserProfile(username, body);

@@ -7,8 +7,8 @@ interface PageProps {
     params: Promise<{ username: string }>;
 }
 
-// Revalidate every hour (ISR)
-export const revalidate = 3600;
+// Revalidate immediately for real-time updates
+export const revalidate = 0;
 
 // Generate metadata for SEO
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

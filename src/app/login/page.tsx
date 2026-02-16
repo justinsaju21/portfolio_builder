@@ -1,21 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { User, Lock, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
-export default function LoginPage() {
+function LoginForm() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [formData, setFormData] = useState({
         username: "",
         pin: "",
     });
+
+    useEffect(() => {
+        if (searchParams.get("session") === "expired") {
+            setError("Session expired. Please log in again.");
+            router.replace("/login");
+        }
+    }, [searchParams, router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,7 +44,7 @@ export default function LoginPage() {
                 return;
             }
 
-            localStorage.setItem("portfolio_user", formData.username);
+            localStorage.setItem("portfolio_user", data.username || formData.username.toLowerCase().trim());
             router.push("/dashboard");
         } catch (err) {
             setError("Something went wrong. Please try again.");
@@ -161,7 +169,7 @@ export default function LoginPage() {
                                 placeholder="yourname"
                                 value={formData.username}
                                 onChange={(e) =>
-                                    setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9]/g, "") })
+                                    setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, "") })
                                 }
                                 icon={<User style={{ width: "18px", height: "18px" }} />}
                                 required
@@ -171,7 +179,7 @@ export default function LoginPage() {
                                 label="PIN"
                                 type="password"
                                 placeholder="••••"
-                                maxLength={6}
+                                maxLength={20}
                                 value={formData.pin}
                                 onChange={(e) =>
                                     setFormData({ ...formData, pin: e.target.value.replace(/\D/g, "") })
@@ -241,5 +249,18 @@ export default function LoginPage() {
                 </p>
             </motion.div>
         </main>
+    );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={
+            <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--background, #030310)" }}>
+                <div style={{ width: 40, height: 40, border: "3px solid rgba(99,102,241,0.2)", borderTopColor: "#6366f1", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </main>
+        }>
+            <LoginForm />
+        </Suspense>
     );
 }
