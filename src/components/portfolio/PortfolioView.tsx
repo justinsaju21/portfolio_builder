@@ -96,10 +96,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const [currentTheme, setCurrentTheme] = useState<string>(profile.color_theme || "dark");
     const themeBase = THEMES[currentTheme] || THEMES.dark;
     const isBaseTheme = currentTheme === (profile.color_theme || "dark");
-    const toggleTheme = () => setCurrentTheme(prev => {
-        const keys = Object.keys(THEMES);
-        return keys[(keys.indexOf(prev) + 1) % keys.length];
-    });
+    const toggleTheme = () => setCurrentTheme(prev => prev === "light" ? "dark" : "light");
 
     // Resolved Theme Colors
     const accent = profile.primary_color || "#818cf8";
