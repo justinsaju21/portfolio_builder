@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getPortfolioData, updateUserProfile, ensureSheetsExist } from "@/lib/google-sheets";
 import { getAuthUsername } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ username: string }> }

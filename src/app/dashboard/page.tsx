@@ -89,6 +89,8 @@ export default function DashboardPage() {
                 return;
             }
 
+            console.log("Fetched Portfolio Data:", data);
+
             if (data.profile) {
                 setProfileData(data.profile);
             }
@@ -231,12 +233,15 @@ export default function DashboardPage() {
                 await fetchData(username);
             } else {
                 const errData = await res.json().catch(() => ({}));
-                setActionError(errData.error || "Failed to update. Try again.");
-                alert(errData.error || "Failed to update item.");
+                console.error("Update failed:", errData);
+                const msg = errData.error || "Failed to update. Try again.";
+                setActionError(msg);
+                alert(`Error: ${msg}\nDetails: ${JSON.stringify(errData.details || "")}`);
             }
         } catch (e) {
-            console.error(e);
-            setActionError("Failed to update. Try again.");
+            console.error("Update exception:", e);
+            setActionError("Failed to update. Network or server error.");
+            alert("Failed to update. Network or server error.");
         } finally {
             setActionLoading(null);
         }

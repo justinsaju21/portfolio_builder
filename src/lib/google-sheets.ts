@@ -549,6 +549,9 @@ export async function updateUserProfile(
         const sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
         if (!sheet) return false;
 
+        // Ensure headers are loaded to prevent skipping new columns
+        await sheet.loadHeaderRow();
+
         const rows = await sheet.getRows();
         const userRow = rows.find(
             (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
@@ -559,7 +562,12 @@ export async function updateUserProfile(
         // Update each field
         Object.entries(updates).forEach(([key, value]) => {
             if (key !== "username" && value !== undefined) {
-                userRow.set(key, value);
+                // Check if header exists
+                if (sheet.headerValues.includes(key)) {
+                    userRow.set(key, value);
+                } else {
+                    console.warn(`Skipping unknown column "${key}" for update.`);
+                }
             }
         });
 
@@ -715,7 +723,7 @@ export async function updateSectionRow(
             );
 
             if (index < 0 || index >= userRows.length) {
-                console.error(`Index ${index} out of bounds for user ${username} in ${sheetName}`);
+                console.error(`Index ${index} out of bounds for user ${username} in ${sheetName}. Found ${userRows.length} rows.`);
                 return false;
             }
 
