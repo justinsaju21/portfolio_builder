@@ -49,11 +49,11 @@ const FONT_URLS: Record<string, string> = {
 };
 
 const THEMES: Record<string, any> = {
-    light: { bg: "#ffffff", surface: "#f8fafc", textPrimary: "#0f172a", textMuted: "#475569", textDim: "#94a3b8", glassBg: "rgba(15, 23, 42, 0.03)", glassBorder: "rgba(15, 23, 42, 0.08)", cardBg: "#ffffff" },
-    dark: { bg: "#030310", surface: "rgba(255,255,255,0.03)", textPrimary: "#e2e8f0", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.06)", cardBg: "rgba(20,20,40,0.92)" },
-    midnight: { bg: "#020617", surface: "#0f172a", textPrimary: "#f8fafc", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(30, 41, 59, 0.4)", glassBorder: "rgba(51, 65, 85, 0.5)", cardBg: "#0f172a" },
-    sunset: { bg: "#1a0b1c", surface: "#2d1b2e", textPrimary: "#fae8ff", textMuted: "#d8b4fe", textDim: "#a855f7", glassBg: "rgba(88, 28, 135, 0.1)", glassBorder: "rgba(168, 85, 247, 0.2)", cardBg: "#2d1b2e" },
-    glass: { bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", surface: "rgba(255,255,255,0.05)", textPrimary: "#ffffff", textMuted: "#cbd5e1", textDim: "#94a3b8", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.1)", cardBg: "rgba(255,255,255,0.02)" }
+    light: { bg: "#ffffff", surface: "#f8fafc", textPrimary: "#0f172a", textMuted: "#475569", textDim: "#94a3b8", glassBg: "rgba(15, 23, 42, 0.03)", glassBorder: "rgba(15, 23, 42, 0.08)", cardBg: "#ffffff", navBg: "rgba(255, 255, 255, 0.85)" },
+    dark: { bg: "#030310", surface: "rgba(255,255,255,0.03)", textPrimary: "#e2e8f0", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.06)", cardBg: "rgba(20,20,40,0.92)", navBg: "rgba(10, 10, 30, 0.6)" },
+    midnight: { bg: "#020617", surface: "#0f172a", textPrimary: "#f8fafc", textMuted: "#94a3b8", textDim: "#64748b", glassBg: "rgba(30, 41, 59, 0.4)", glassBorder: "rgba(51, 65, 85, 0.5)", cardBg: "#0f172a", navBg: "rgba(15, 23, 42, 0.7)" },
+    sunset: { bg: "#1a0b1c", surface: "#2d1b2e", textPrimary: "#fae8ff", textMuted: "#d8b4fe", textDim: "#a855f7", glassBg: "rgba(88, 28, 135, 0.1)", glassBorder: "rgba(168, 85, 247, 0.2)", cardBg: "#2d1b2e", navBg: "rgba(45, 27, 46, 0.7)" },
+    glass: { bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)", surface: "rgba(255,255,255,0.05)", textPrimary: "#ffffff", textMuted: "#cbd5e1", textDim: "#94a3b8", glassBg: "rgba(255,255,255,0.03)", glassBorder: "rgba(255,255,255,0.1)", cardBg: "rgba(255,255,255,0.02)", navBg: "rgba(15, 23, 42, 0.6)" }
 };
 
 /* ─── Helpers ─── */
@@ -113,6 +113,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
         glassBg: isBaseTheme ? (profile.surface_color || themeBase.glassBg) : themeBase.glassBg,
         glassBorder: themeBase.glassBorder,
         cardBg: isBaseTheme ? (profile.surface_color || themeBase.cardBg) : themeBase.cardBg,
+        navBg: themeBase.navBg,
     };
 
     // Fonts & Styles
@@ -125,7 +126,13 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
     // --- Data Pre-processing ---
     // Extract Nav Links
-    const navLinks = sectionOrder.filter(id => !hiddenSections.includes(id)).map(id => {
+    const navLinks = sectionOrder.filter(id => {
+        if (hiddenSections.includes(id)) return false;
+        if (id === "about" || id === "contact") return true;
+        if (id === "blog") return !!profile.rss_url;
+        if (Array.isArray((data as any)[id]) && ((data as any)[id] as any[]).length === 0) return false;
+        return true;
+    }).map(id => {
         const labels: Record<string, string> = { about: "About", experience: "Experience", projects: "Projects", skills: "Skills", education: "Education", leadership: "Leadership", contact: "Contact", blog: "Blog" };
         const label = labels[id] || customSections.find(s => s.id === id)?.title;
         // Always return an object
@@ -341,7 +348,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
 
             {/* Navbar */}
             <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, padding: "16px 24px", background: "transparent" }}>
-                <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 24px", borderRadius: "100px", background: "rgba(10,10,30,0.6)", backdropFilter: "blur(20px)", border: `1px solid ${theme.glassBorder}` }}>
+                <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 24px", borderRadius: "100px", background: theme.navBg, backdropFilter: "blur(20px)", border: `1px solid ${theme.glassBorder}` }}>
                     <h3 style={{ fontSize: "1.1rem", fontWeight: 800, background: `linear-gradient(135deg, ${accent}, ${accent2})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{profile.full_name?.split(" ")[0] || "Portfolio"}</h3>
                     <div style={{ display: "flex", gap: "20px" }}>
                         {navLinks.map(l => (
