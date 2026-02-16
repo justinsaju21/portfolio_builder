@@ -145,5 +145,61 @@ export const PORTFOLIO_THEMES: Record<string, ThemeConfig> = {
         glassBorder: "rgba(255,255,255,0.1)",
         cardBg: "rgba(255,255,255,0.02)",
         navBg: "rgba(15, 23, 42, 0.6)"
+    },
+    // 17. Snow (True Light)
+    snow: {
+        id: "snow", label: "Snow White",
+        bg: "#ffffff", surface: "#f9fafb",
+        textPrimary: "#111827", textMuted: "#4b5563", textDim: "#9ca3af",
+        glassBg: "rgba(255, 255, 255, 0.9)", glassBorder: "rgba(229, 231, 235, 0.8)",
+        cardBg: "#ffffff", navBg: "rgba(255, 255, 255, 0.95)"
+    },
+    // 18. Solarized Light
+    solar: {
+        id: "solar", label: "Solarized Sun",
+        bg: "#fdf6e3", surface: "#eee8d5",
+        textPrimary: "#073642", textMuted: "#586e75", textDim: "#93a1a1",
+        glassBg: "rgba(238, 232, 213, 0.6)", glassBorder: "rgba(147, 161, 161, 0.2)",
+        cardBg: "#eee8d5", navBg: "rgba(253, 246, 227, 0.95)"
+    },
+    // 19. Corporate (Blue/White)
+    corporate: {
+        id: "corporate", label: "Corporate Blue",
+        bg: "#f0f4f8", surface: "#ffffff",
+        textPrimary: "#102a43", textMuted: "#486581", textDim: "#829ab1",
+        glassBg: "rgba(255, 255, 255, 0.8)", glassBorder: "rgba(188, 204, 220, 0.5)",
+        cardBg: "#ffffff", navBg: "rgba(240, 244, 248, 0.95)"
+    },
+    // 20. Matcha (Green/Cream)
+    matcha: {
+        id: "matcha", label: "Matcha Tea",
+        bg: "#f1f8e9", surface: "#ffffff",
+        textPrimary: "#33691e", textMuted: "#689f38", textDim: "#9ccc65",
+        glassBg: "rgba(255, 255, 255, 0.7)", glassBorder: "rgba(197, 225, 165, 0.5)",
+        cardBg: "#ffffff", navBg: "rgba(241, 248, 233, 0.95)"
+    },
+    // 21. Synthwave (Retro)
+    synthwave: {
+        id: "synthwave", label: "Synthwave 80s",
+        bg: "#2b213a", surface: "#241b35",
+        textPrimary: "#ff71ce", textMuted: "#01cdfe", textDim: "#b967ff",
+        glassBg: "rgba(36, 27, 53, 0.6)", glassBorder: "rgba(255, 113, 206, 0.3)",
+        cardBg: "#241b35", navBg: "rgba(43, 33, 58, 0.9)"
+    },
+    // 22. Pop (Vibrant)
+    pop: {
+        id: "pop", label: "Pop Art",
+        bg: "#fffbe6", surface: "#ffffff",
+        textPrimary: "#121212", textMuted: "#444444", textDim: "#888888",
+        glassBg: "rgba(255, 255, 255, 0.9)", glassBorder: "rgba(0, 0, 0, 0.1)",
+        cardBg: "#ffffff", navBg: "rgba(255, 251, 230, 0.95)"
+    },
+    // 23. Liquid (Dark Gradient)
+    liquid: {
+        id: "liquid", label: "Liquid Metal",
+        bg: "linear-gradient(to bottom right, #232526, #414345)", surface: "rgba(255,255,255,0.05)",
+        textPrimary: "#e0e0e0", textMuted: "#a0a0a0", textDim: "#606060",
+        glassBg: "rgba(0, 0, 0, 0.2)", glassBorder: "rgba(255, 255, 255, 0.1)",
+        cardBg: "rgba(35, 37, 38, 0.8)", navBg: "rgba(35, 37, 38, 0.9)"
     }
 };

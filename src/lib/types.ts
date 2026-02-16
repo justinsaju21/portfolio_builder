@@ -39,7 +39,8 @@ export const UserProfileSchema = z.object({
     custom_css: z.string().default(""),
     color_theme: z.enum([
         "light", "dark", "midnight", "sunset", "ocean", "forest", "cyberpunk",
-        "coffee", "rose", "slate", "terminal", "royal", "lavender", "nordic", "blackout"
+        "coffee", "rose", "slate", "terminal", "royal", "lavender", "nordic", "blackout",
+        "glass", "snow", "solar", "corporate", "matcha", "synthwave", "pop", "liquid"
     ]).default("dark"),
     // Premium Features
     rss_url: z.string().default(""),
