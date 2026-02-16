@@ -93,271 +93,195 @@ const getSpreadsheet = cache(async (): Promise<GoogleSpreadsheet> => {
 // Actually, I can just append the new fetchers before getPortfolioData and then update getPortfolioData.
 
 /**
- * Get user profile by username
+ * Get user profile by username with retry logic
  */
 export const getUserByUsername = cache(async (
-    username: string
+    username: string,
+    retries = 3
 ): Promise<UserProfile | null> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
-        if (!sheet) return null;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
+            if (!sheet) return null;
 
-        const rows = await sheet.getRows();
-        const userRow = rows.find(
-            (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
-        );
+            const rows = await sheet.getRows();
+            const userRow = rows.find(
+                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
+            );
 
-        if (!userRow) return null;
+            if (!userRow) return null;
 
-        const rawData = {
-            username: userRow.get("username") || "",
-            password_pin: String(userRow.get("password_pin") || ""),
-            full_name: userRow.get("full_name") || "",
-            tagline: userRow.get("tagline") || "",
-            email: userRow.get("email") || "",
-            github: userRow.get("github") || "",
-            linkedin: userRow.get("linkedin") || "",
-            bio: userRow.get("bio") || "",
-            degree: userRow.get("degree") || "",
-            university: userRow.get("university") || "",
-            graduation_year: String(userRow.get("graduation_year") || ""),
-            theme_preference: userRow.get("theme_preference") || "modern",
-            profile_image: userRow.get("profile_image") || "",
-            resume_url: userRow.get("resume_url") || "",
-            primary_color: userRow.get("primary_color") || "#6366f1",
-            secondary_color: userRow.get("secondary_color") || "#14b8a6",
-            font_choice: userRow.get("font_choice") || "inter",
-            card_style: userRow.get("card_style") || "glass",
-            animation_enabled: userRow.get("animation_enabled")?.toLowerCase() !== "false",
-            section_order: userRow.get("section_order") || "about,skills,experience,projects,leadership,education,contact",
-            section_visibility: userRow.get("section_visibility") || "",
-            custom_sections: userRow.get("custom_sections") || "[]",
-            // New Customization Fields
-            bg_color: userRow.get("bg_color") || "#ffffff",
-            surface_color: userRow.get("surface_color") || "#f8fafc",
-            text_primary: userRow.get("text_primary") || "#0f172a",
-            text_muted: userRow.get("text_muted") || "#475569",
-            text_dim: userRow.get("text_dim") || "#94a3b8",
-            heading_font: userRow.get("heading_font") || "Inter",
-            body_font: userRow.get("body_font") || "Inter",
-            button_style: userRow.get("button_style") || "solid",
-            container_width: userRow.get("container_width") || "normal",
-            custom_css: userRow.get("custom_css") || "",
-            color_theme: userRow.get("color_theme") || "dark",
-            // Premium Features
-            rss_url: userRow.get("rss_url") || "",
-            google_analytics_id: userRow.get("google_analytics_id") || "",
-            status_badge: userRow.get("status_badge") || "none",
-            timeline_view: userRow.get("timeline_view")?.toLowerCase() === "true",
-            github_fetching: userRow.get("github_fetching")?.toLowerCase() === "true",
-        };
+            const rawData = {
+                username: userRow.get("username") || "",
+                password_pin: String(userRow.get("password_pin") || ""),
+                full_name: userRow.get("full_name") || "",
+                tagline: userRow.get("tagline") || "",
+                email: userRow.get("email") || "",
+                github: userRow.get("github") || "",
+                linkedin: userRow.get("linkedin") || "",
+                bio: userRow.get("bio") || "",
+                degree: userRow.get("degree") || "",
+                university: userRow.get("university") || "",
+                graduation_year: String(userRow.get("graduation_year") || ""),
+                theme_preference: userRow.get("theme_preference") || "modern",
+                profile_image: userRow.get("profile_image") || "",
+                resume_url: userRow.get("resume_url") || "",
+                primary_color: userRow.get("primary_color") || "#6366f1",
+                secondary_color: userRow.get("secondary_color") || "#14b8a6",
+                font_choice: userRow.get("font_choice") || "inter",
+                card_style: userRow.get("card_style") || "glass",
+                animation_enabled: userRow.get("animation_enabled")?.toLowerCase() !== "false",
+                section_order: userRow.get("section_order") || "about,skills,experience,projects,leadership,education,contact",
+                section_visibility: userRow.get("section_visibility") || "",
+                custom_sections: userRow.get("custom_sections") || "[]",
+                // New Customization Fields
+                bg_color: userRow.get("bg_color") || "#ffffff",
+                surface_color: userRow.get("surface_color") || "#f8fafc",
+                text_primary: userRow.get("text_primary") || "#0f172a",
+                text_muted: userRow.get("text_muted") || "#475569",
+                text_dim: userRow.get("text_dim") || "#94a3b8",
+                heading_font: userRow.get("heading_font") || "Inter",
+                body_font: userRow.get("body_font") || "Inter",
+                button_style: userRow.get("button_style") || "solid",
+                container_width: userRow.get("container_width") || "normal",
+                custom_css: userRow.get("custom_css") || "",
+                color_theme: userRow.get("color_theme") || "dark",
+                // Premium Features
+                rss_url: userRow.get("rss_url") || "",
+                google_analytics_id: userRow.get("google_analytics_id") || "",
+                status_badge: userRow.get("status_badge") || "none",
+                timeline_view: userRow.get("timeline_view")?.toLowerCase() === "true",
+                github_fetching: userRow.get("github_fetching")?.toLowerCase() === "true",
+            };
 
-        // Validate with Zod
-        const result = UserProfileSchema.safeParse(rawData);
-        if (!result.success) {
-            console.error(`Validation error for user ${username}:`, result.error.format());
-            return rawData as UserProfile; // Fallback to raw data if validation fails but mostly correct
+            // Validate with Zod
+            const result = UserProfileSchema.safeParse(rawData);
+            if (!result.success) {
+                console.error(`Validation error for user ${username}:`, result.error.format());
+                return rawData as UserProfile; // Fallback to raw data if validation fails but mostly correct
+            }
+            return result.data;
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed fetching user ${username}:`, error);
+            if (i === retries - 1) {
+                console.error(`Final failure fetching user ${username}:`, error);
+                return null;
+            }
+            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
         }
-
-        return result.data;
-    } catch (error) {
-        console.error("Error fetching user:", error);
-        return null;
     }
+    return null;
 });
 
 /**
- * Get all experiences for a user
- */
-export const getExperiencesByUsername = cache(async (
-    username: string
-): Promise<Experience[]> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.EXPERIENCE];
-        if (!sheet) return [];
-
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = {
-                    username: row.get("username") || "",
-                    title: row.get("title") || "",
-                    company: row.get("company") || "",
-                    location: row.get("location") || "",
-                    start_date: row.get("start_date") || "",
-                    end_date: row.get("end_date") || "",
-                    is_current: row.get("is_current")?.toLowerCase() === "true",
-                    description_points: parseList(row.get("description_points")),
-                    type: row.get("type") || "job",
-                };
-
-                const result = ExperienceSchema.safeParse(rawData);
-                return result.success ? result.data : (rawData as Experience);
-            });
-    } catch (error) {
-        console.error("Error fetching experiences:", error);
-        return [];
-    }
-});
-
-/**
- * Get all projects for a user
- */
-export const getProjectsByUsername = cache(async (
-    username: string
-): Promise<Project[]> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.PROJECTS];
-        if (!sheet) return [];
-
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = {
-                    username: row.get("username") || "",
-                    title: row.get("title") || "",
-                    description: row.get("description") || "",
-                    tech_stack: parseList(row.get("tech_stack")),
-                    repo_url: row.get("repo_url") || "",
-                    live_url: row.get("live_url") || "",
-                    image_url: row.get("image_url") || "",
-                    featured: row.get("featured")?.toLowerCase() === "true",
-                };
-
-                const result = ProjectSchema.safeParse(rawData);
-                return result.success ? result.data : (rawData as Project);
-            });
-    } catch (error) {
-        console.error("Error fetching projects:", error);
-        return [];
-    }
-});
-
-/**
- * Get all skills for a user
- */
-export const getSkillsByUsername = cache(async (username: string): Promise<Skill[]> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.SKILLS];
-        if (!sheet) return [];
-
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = {
-                    username: row.get("username") || "",
-                    category: row.get("category") || "",
-                    skills_list: parseList(row.get("skills_list")),
-                };
-
-                const result = SkillSchema.safeParse(rawData);
-                return result.success ? result.data : (rawData as Skill);
-            });
-    } catch (error) {
-        console.error("Error fetching skills:", error);
-        return [];
-    }
-});
-
-/**
- * Get all education for a user
- */
-export const getEducationByUsername = cache(async (
-    username: string
-): Promise<Education[]> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.EDUCATION];
-        if (!sheet) return [];
-
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = {
-                    username: row.get("username") || "",
-                    degree: row.get("degree") || "",
-                    field: row.get("field") || "",
-                    institution: row.get("institution") || "",
-                    year: String(row.get("year") || ""),
-                    is_current: row.get("is_current")?.toLowerCase() === "true",
-                };
-
-                const result = EducationSchema.safeParse(rawData);
-                return result.success ? result.data : (rawData as Education);
-            });
-    } catch (error) {
-        console.error("Error fetching education:", error);
-        return [];
-    }
-});
-
-/**
- * Get all leadership roles for a user
- */
-export const getLeadershipByUsername = cache(async (
-    username: string
-): Promise<Leadership[]> => {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[SHEET_NAMES.LEADERSHIP];
-        if (!sheet) return [];
-
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = {
-                    username: row.get("username") || "",
-                    title: row.get("title") || "",
-                    organization: row.get("organization") || "",
-                    description: row.get("description") || "",
-                    achievements: parseList(row.get("achievements")),
-                    type: row.get("type") || "club",
-                };
-                const result = LeadershipSchema.safeParse(rawData);
-                return result.success ? result.data : (rawData as Leadership);
-            });
-    } catch (error) {
-        console.error("Error fetching leadership:", error);
-        return [];
-    }
-});
-
-/**
- * Generic helper to fetch section data
+ * Generic helper to fetch section data with retry logic
  */
 async function fetchSectionData<T>(
     sheetTitle: string,
     username: string,
     schema: z.ZodType<T>,
-    mapFn: (row: any) => any
+    mapFn: (row: any) => any,
+    retries = 3
 ): Promise<T[]> {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[sheetTitle];
-        if (!sheet) return [];
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[sheetTitle];
+            if (!sheet) return [];
 
-        const rows = await sheet.getRows();
-        return rows
-            .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
-            .map((row) => {
-                const rawData = mapFn(row);
-                const result = schema.safeParse(rawData);
-                return result.success ? result.data : (rawData as T);
-            });
-    } catch (error) {
-        console.error(`Error fetching ${sheetTitle}:`, error);
-        return [];
+            const rows = await sheet.getRows();
+            return rows
+                .filter((row) => row.get("username")?.toLowerCase() === username.toLowerCase())
+                .map((row) => {
+                    const rawData = mapFn(row);
+                    const result = schema.safeParse(rawData);
+                    return result.success ? result.data : (rawData as T);
+                });
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed for ${sheetTitle}:`, error);
+            if (i === retries - 1) {
+                console.error(`Final failure for ${sheetTitle}:`, error);
+                return [];
+            }
+            // Exponential backoff: 500ms, 1000ms, 2000ms
+            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+        }
     }
+    return [];
 }
+
+/**
+ * Get all experiences for a user
+ */
+export const getExperiencesByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.EXPERIENCE, username, ExperienceSchema, (row) => ({
+        username: row.get("username") || "",
+        title: row.get("title") || "",
+        company: row.get("company") || "",
+        location: row.get("location") || "",
+        start_date: row.get("start_date") || "",
+        end_date: row.get("end_date") || "",
+        is_current: row.get("is_current")?.toLowerCase() === "true",
+        description_points: parseList(row.get("description_points")),
+        type: row.get("type") || "job",
+    }));
+});
+
+/**
+ * Get all projects for a user
+ */
+export const getProjectsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.PROJECTS, username, ProjectSchema, (row) => ({
+        username: row.get("username") || "",
+        title: row.get("title") || "",
+        description: row.get("description") || "",
+        tech_stack: parseList(row.get("tech_stack")),
+        repo_url: row.get("repo_url") || "",
+        live_url: row.get("live_url") || "",
+        image_url: row.get("image_url") || "",
+        featured: row.get("featured")?.toLowerCase() === "true",
+    }));
+});
+
+/**
+ * Get all skills for a user
+ */
+export const getSkillsByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.SKILLS, username, SkillSchema, (row) => ({
+        username: row.get("username") || "",
+        category: row.get("category") || "",
+        skills_list: parseList(row.get("skills_list")),
+    }));
+});
+
+/**
+ * Get all education for a user
+ */
+export const getEducationByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.EDUCATION, username, EducationSchema, (row) => ({
+        username: row.get("username") || "",
+        degree: row.get("degree") || "",
+        field: row.get("field") || "",
+        institution: row.get("institution") || "",
+        year: String(row.get("year") || ""),
+        is_current: row.get("is_current")?.toLowerCase() === "true",
+    }));
+});
+
+/**
+ * Get all leadership roles for a user
+ */
+export const getLeadershipByUsername = cache(async (username: string) => {
+    return fetchSectionData(SHEET_NAMES.LEADERSHIP, username, LeadershipSchema, (row) => ({
+        username: row.get("username") || "",
+        title: row.get("title") || "",
+        organization: row.get("organization") || "",
+        description: row.get("description") || "",
+        achievements: parseList(row.get("achievements")),
+        type: row.get("type") || "club",
+    }));
+});
 
 // ===== NEW FETCHERS =====
 
@@ -705,64 +629,80 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
 }
 
 /**
- * Add a row to a specific section sheet
+ * Add a row to a specific section sheet with retry logic
  */
 export async function addSectionRow(
     sheetName: string,
-    data: Record<string, unknown>
+    data: Record<string, unknown>,
+    retries = 3
 ): Promise<boolean> {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[sheetName];
-        if (!sheet) return false;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[sheetName];
+            if (!sheet) return false;
 
-        // Convert arrays to pipe-separated strings for Google Sheets
-        const rowData: Record<string, string> = {};
-        for (const [key, value] of Object.entries(data)) {
-            if (Array.isArray(value)) {
-                rowData[key] = value.join(" | ");
-            } else if (typeof value === "boolean") {
-                rowData[key] = value ? "true" : "false";
-            } else {
-                rowData[key] = String(value ?? "");
+            // Convert arrays to pipe-separated strings for Google Sheets
+            const rowData: Record<string, string> = {};
+            for (const [key, value] of Object.entries(data)) {
+                if (Array.isArray(value)) {
+                    rowData[key] = value.join(" | ");
+                } else if (typeof value === "boolean") {
+                    rowData[key] = value ? "true" : "false";
+                } else {
+                    rowData[key] = String(value ?? "");
+                }
             }
-        }
 
-        await sheet.addRow(rowData);
-        return true;
-    } catch (error) {
-        console.error(`Error adding row to ${sheetName}:`, error);
-        return false;
+            await sheet.addRow(rowData);
+            return true;
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed adding row to ${sheetName}:`, error);
+            if (i === retries - 1) {
+                console.error(`Final failure adding row to ${sheetName}:`, error);
+                return false;
+            }
+            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+        }
     }
+    return false;
 }
 
 /**
- * Delete a user's row from a section sheet by matching index
+ * Delete a user's row from a section sheet by matching index with retry logic
  * (index = nth row belonging to this username, 0-based)
  */
 export async function deleteSectionRow(
     sheetName: string,
     username: string,
-    rowIndex: number
+    rowIndex: number,
+    retries = 3
 ): Promise<boolean> {
-    try {
-        const doc = await getSpreadsheet();
-        const sheet = doc.sheetsByTitle[sheetName];
-        if (!sheet) return false;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[sheetName];
+            if (!sheet) return false;
 
-        const rows = await sheet.getRows();
-        const userRows = rows.filter(
-            (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
-        );
+            const rows = await sheet.getRows();
+            const userRows = rows.filter(
+                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
+            );
 
-        if (rowIndex < 0 || rowIndex >= userRows.length) return false;
+            if (rowIndex < 0 || rowIndex >= userRows.length) return false;
 
-        await userRows[rowIndex].delete();
-        return true;
-    } catch (error) {
-        console.error(`Error deleting row from ${sheetName}:`, error);
-        return false;
+            await userRows[rowIndex].delete();
+            return true;
+        } catch (error) {
+            console.warn(`Attempt ${i + 1} failed deleting row from ${sheetName}:`, error);
+            if (i === retries - 1) {
+                console.error(`Final failure deleting row from ${sheetName}:`, error);
+                return false;
+            }
+            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+        }
     }
+    return false;
 }
 
 /**
