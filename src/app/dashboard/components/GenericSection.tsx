@@ -50,6 +50,8 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
     const [tempListInput, setTempListInput] = useState<Record<string, string>>({});
 
     const handleAdd = async () => {
+        if (actionLoading) return; // Prevent double-submit
+
         // Validate required fields
         const missing = config.fields.filter(f => f.required && !newItem[f.name]);
         if (missing.length > 0) {
@@ -161,7 +163,17 @@ export default function GenericSection({ config, data, onAdd, onDelete, actionLo
                             </div>
                             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
                                 <button onClick={() => setShowAdd(false)} style={{ padding: "10px 20px", borderRadius: 12, background: "transparent", color: "var(--foreground-muted)", border: "none", cursor: "pointer" }}>Cancel</button>
-                                <button onClick={handleAdd} style={{ padding: "10px 24px", borderRadius: 12, background: "#6366f1", color: "white", border: "none", fontWeight: 600, cursor: "pointer" }}>Save</button>
+                                <button onClick={handleAdd}
+                                    disabled={!!actionLoading}
+                                    style={{
+                                        padding: "10px 24px", borderRadius: 12,
+                                        background: actionLoading ? "rgba(99, 102, 241, 0.5)" : "#6366f1",
+                                        color: "white", border: "none", fontWeight: 600,
+                                        cursor: actionLoading ? "not-allowed" : "pointer",
+                                        display: "flex", alignItems: "center", gap: "8px"
+                                    }}>
+                                    {actionLoading ? "Saving..." : "Save"}
+                                </button>
                             </div>
                         </div>
                     </motion.div>

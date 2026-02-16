@@ -13,9 +13,6 @@ export async function GET(
             return NextResponse.json({ error: "Username is required" }, { status: 400 });
         }
 
-        // Ensure database integrity (sheets + headers)
-        await ensureSheetsExist(username);
-
         const data = await getPortfolioData(username);
 
         if (!data) {
@@ -45,6 +42,9 @@ export async function PUT(
         if (!authUser || authUser.toLowerCase() !== username.toLowerCase()) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
+
+        // Ensure database integrity (sheets + headers)
+        await ensureSheetsExist(username);
 
         const success = await updateUserProfile(username, body);
 

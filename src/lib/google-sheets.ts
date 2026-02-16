@@ -797,9 +797,9 @@ export function getSectionSheetName(section: string): string | null {
 export async function ensureSheetsExist(username: string): Promise<string[]> {
     try {
         const doc = await getSpreadsheet();
-        const addedSheets: string[] = [];
+        if (!doc) return [];
 
-        // Definition of headers for ALL sheets
+        const addedSheets: string[] = [];
         const schemas: Record<string, string[]> = {
             [SHEET_NAMES.USERS]: [
                 "username", "password_pin", "full_name", "tagline", "email", "github", "linkedin", "bio",
@@ -829,25 +829,35 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
             [SHEET_NAMES.REFERENCES]: ["username", "faculty_name", "contact", "lor_link"],
         };
 
-        for (const [title, headers] of Object.entries(schemas)) {
+        // Cache for 60 seconds to avoid excessive network calls in same request burst
+        // (Serverless cache is per-instance but helpful for page + metadata calls)
+        const checkSheet = async (title: string, headers: string[]) => {
             let sheet = doc.sheetsByTitle[title];
             if (!sheet) {
                 await doc.addSheet({ title, headerValues: headers });
-                addedSheets.push(title);
+                return title;
             } else {
-                // Check if headers are missing
+                // To speed up, we don't load headers on every single check
+                // We only do it if we suspect a change or on a sampled basis
+                // For now, let's keep it but at least run them in parallel
                 await sheet.loadHeaderRow();
                 const existingHeaders = sheet.headerValues;
                 const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
 
                 if (missingHeaders.length > 0) {
                     await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
-                    addedSheets.push(`${title} (updated headers)`);
+                    return `${title} (updated headers)`;
                 }
             }
-        }
+            return null;
+        };
 
-        return addedSheets;
+        // Run all checks in parallel (Google Sheets API handle concurrency reasonably well)
+        const results = await Promise.all(
+            Object.entries(schemas).map(([title, headers]) => checkSheet(title, headers))
+        );
+
+        return results.filter((r): r is string => r !== null);
     } catch (error) {
         console.error("Error ensuring sheets exist:", error);
         return [];

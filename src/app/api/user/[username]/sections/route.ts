@@ -126,6 +126,9 @@ export async function DELETE(
             return NextResponse.json({ error: "Invalid section" }, { status: 400 });
         }
 
+        // Ensure database integrity (sheets + headers)
+        await ensureSheetsExist(username);
+
         const success = await deleteSectionRow(sheetName, username, index);
 
         if (!success) {
