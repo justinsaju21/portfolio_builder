@@ -799,8 +799,22 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
         const doc = await getSpreadsheet();
         const addedSheets: string[] = [];
 
-        // Definition of headers for each new sheet
+        // Definition of headers for ALL sheets
         const schemas: Record<string, string[]> = {
+            [SHEET_NAMES.USERS]: [
+                "username", "password_pin", "full_name", "tagline", "email", "github", "linkedin", "bio",
+                "degree", "university", "graduation_year", "theme_preference", "profile_image", "resume_url",
+                "primary_color", "secondary_color", "font_choice", "card_style", "animation_enabled",
+                "section_order", "section_visibility", "custom_sections", "bg_color", "surface_color",
+                "text_primary", "text_muted", "text_dim", "heading_font", "body_font", "button_style",
+                "container_width", "custom_css", "color_theme", "rss_url", "google_analytics_id",
+                "status_badge", "timeline_view", "github_fetching"
+            ],
+            [SHEET_NAMES.EXPERIENCE]: ["username", "title", "company", "location", "start_date", "end_date", "is_current", "description_points", "type"],
+            [SHEET_NAMES.PROJECTS]: ["username", "title", "description", "tech_stack", "repo_url", "live_url", "image_url", "featured"],
+            [SHEET_NAMES.SKILLS]: ["username", "category", "skills_list"],
+            [SHEET_NAMES.EDUCATION]: ["username", "degree", "field", "institution", "year", "is_current"],
+            [SHEET_NAMES.LEADERSHIP]: ["username", "title", "organization", "description", "achievements", "type"],
             [SHEET_NAMES.HACKATHONS]: ["username", "name", "project_built", "team_size", "position", "proof_link"],
             [SHEET_NAMES.RESEARCH]: ["username", "title", "journal_conference", "index_status", "publication_status", "link"],
             [SHEET_NAMES.ENTREPRENEURSHIP]: ["username", "startup_name", "registration_details", "revenue_funding", "description", "proof_link"],
@@ -816,9 +830,20 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
         };
 
         for (const [title, headers] of Object.entries(schemas)) {
-            if (!doc.sheetsByTitle[title]) {
+            let sheet = doc.sheetsByTitle[title];
+            if (!sheet) {
                 await doc.addSheet({ title, headerValues: headers });
                 addedSheets.push(title);
+            } else {
+                // Check if headers are missing
+                await sheet.loadHeaderRow();
+                const existingHeaders = sheet.headerValues;
+                const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
+
+                if (missingHeaders.length > 0) {
+                    await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
+                    addedSheets.push(`${title} (updated headers)`);
+                }
             }
         }
 

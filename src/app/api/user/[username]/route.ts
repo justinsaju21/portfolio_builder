@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getPortfolioData, updateUserProfile } from "@/lib/google-sheets";
+import { getPortfolioData, updateUserProfile, ensureSheetsExist } from "@/lib/google-sheets";
 import { getAuthUsername } from "@/lib/auth";
 
 export async function GET(
@@ -12,6 +12,9 @@ export async function GET(
         if (!username) {
             return NextResponse.json({ error: "Username is required" }, { status: 400 });
         }
+
+        // Ensure database integrity (sheets + headers)
+        await ensureSheetsExist(username);
 
         const data = await getPortfolioData(username);
 

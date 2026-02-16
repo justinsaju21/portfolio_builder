@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, getUserByUsername } from "@/lib/google-sheets";
+import { createUser, getUserByUsername, ensureSheetsExist } from "@/lib/google-sheets";
 import { z } from "zod";
 
 const SignupSchema = z.object({
@@ -86,6 +86,9 @@ export async function POST(request: NextRequest) {
                 { status: 500 }
             );
         }
+
+        // Initialize user's sheets/database
+        await ensureSheetsExist(normalizedUsername);
 
         return NextResponse.json({ success: true, username: normalizedUsername });
     } catch (error) {
