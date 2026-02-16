@@ -104,12 +104,13 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     const accent2 = profile.secondary_color || themeBase.textMuted;
 
     // ─── Theme Values ───
+    // ─── Theme Values ───
     const theme = {
-        bg: profile.bg_color || themeBase.bg,
-        surface: profile.surface_color || themeBase.surface,
-        textPrimary: profile.text_primary || themeBase.textPrimary,
-        textMuted: profile.text_muted || themeBase.textMuted,
-        textDim: profile.text_dim || themeBase.textDim,
+        bg: themeBase.bg,
+        surface: themeBase.surface,
+        textPrimary: themeBase.textPrimary,
+        textMuted: themeBase.textMuted,
+        textDim: themeBase.textDim,
         glassBg: themeBase.glassBg,
         glassBorder: themeBase.glassBorder,
         cardBg: themeBase.cardBg,

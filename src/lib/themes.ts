@@ -133,4 +133,17 @@ export const PORTFOLIO_THEMES: Record<string, ThemeConfig> = {
         glassBg: "rgba(255, 255, 255, 0.05)", glassBorder: "rgba(255, 255, 255, 0.15)",
         cardBg: "#0a0a0a", navBg: "rgba(0, 0, 0, 0.9)"
     },
+    // 16. Glassmorphism
+    glass: {
+        id: "glass", label: "Glassmorphism",
+        bg: "linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)",
+        surface: "rgba(255,255,255,0.05)",
+        textPrimary: "#ffffff",
+        textMuted: "#cbd5e1",
+        textDim: "#94a3b8",
+        glassBg: "rgba(255,255,255,0.03)",
+        glassBorder: "rgba(255,255,255,0.1)",
+        cardBg: "rgba(255,255,255,0.02)",
+        navBg: "rgba(15, 23, 42, 0.6)"
+    }
 };
