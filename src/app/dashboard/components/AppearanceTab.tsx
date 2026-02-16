@@ -213,6 +213,15 @@ export default function AppearanceTab({ profileData, setProfileData }: Appearanc
                                         { value: "Lora", label: "Lora (Serif)" },
                                     ]} />
                             </div>
+                            <div style={{ marginTop: 16, padding: "12px 16px", background: "rgba(99, 102, 241, 0.1)", borderRadius: 12, border: "1px solid rgba(99, 102, 241, 0.2)", display: "flex", gap: 12, alignItems: "center" }}>
+                                <span style={{ fontSize: "1.2rem" }}>💡</span>
+                                <div>
+                                    <p style={{ fontSize: "0.85rem", fontWeight: 600, color: fg }}>Pro Typography Tip</p>
+                                    <p style={{ fontSize: "0.8rem", color: fgMuted }}>
+                                        For a balanced design, pair a strong <strong>Serif</strong> heading (like <em>Playfair Display</em>) with a clean <strong>Sans-serif</strong> body (like <em>Inter</em>).
+                                    </p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Layout & Component Style */}

@@ -38,29 +38,41 @@ interface SectionProps {
 /* ─── 1. HACKATHONS (Grid of Cards) ─── */
 export function HackathonSection({ data, theme, accent }: SectionProps) {
     const items = data as Hackathon[];
-    return (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
-            {items.map((item, i) => (
-                <motion.div key={i} variants={fadeUp} style={glassCardStyle(theme)} className="glass-card-hover">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "12px" }}>
-                        <div style={{ padding: "10px", borderRadius: "10px", background: `${accent}15`, color: accent }}>
-                            <Zap size={20} />
-                        </div>
-                        {item.proof_link && (
-                            <a href={item.proof_link} target="_blank" rel="noopener" style={{ color: theme.textMuted, transition: "color 0.2s" }} className="hover-accent">
-                                <ExternalLink size={18} />
-                            </a>
-                        )}
-                    </div>
-                    <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 4px", color: theme.textPrimary }}>{item.name}</h3>
-                    <p style={{ fontSize: "0.9rem", color: accent, fontWeight: 500, marginBottom: "8px" }}>{item.project_built}</p>
+    const [showAll, setShowAll] = React.useState(false);
+    const visibleItems = showAll ? items : items.slice(0, 6);
 
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", fontSize: "0.85rem", color: theme.textMuted, marginTop: "16px" }}>
-                        {item.position && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Trophy size={14} /> {item.position}</span>}
-                        {item.team_size && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Users size={14} /> Team of {item.team_size}</span>}
-                    </div>
-                </motion.div>
-            ))}
+    return (
+        <div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px" }}>
+                {visibleItems.map((item, i) => (
+                    <motion.div key={i} variants={fadeUp} style={glassCardStyle(theme)} className="glass-card-hover">
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "12px" }}>
+                            <div style={{ padding: "10px", borderRadius: "10px", background: `${accent}15`, color: accent }}>
+                                <Zap size={20} />
+                            </div>
+                            {item.proof_link && (
+                                <a href={item.proof_link} target="_blank" rel="noopener" style={{ color: theme.textMuted, transition: "color 0.2s" }} className="hover-accent">
+                                    <ExternalLink size={18} />
+                                </a>
+                            )}
+                        </div>
+                        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, margin: "0 0 4px", color: theme.textPrimary }}>{item.name}</h3>
+                        <p style={{ fontSize: "0.9rem", color: accent, fontWeight: 500, marginBottom: "8px" }}>{item.project_built}</p>
+
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", fontSize: "0.85rem", color: theme.textMuted, marginTop: "16px" }}>
+                            {item.position && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Trophy size={14} /> {item.position}</span>}
+                            {item.team_size && <span style={{ display: "flex", alignItems: "center", gap: "6px" }}><Users size={14} /> Team of {item.team_size}</span>}
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+            {items.length > 6 && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "32px" }}>
+                    <button onClick={() => setShowAll(!showAll)} style={{ background: "transparent", border: `1px solid ${accent}`, color: accent, padding: "10px 24px", borderRadius: "100px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = `${accent}10`} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {showAll ? "Show Less" : `Show All (${items.length})`}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -68,9 +80,12 @@ export function HackathonSection({ data, theme, accent }: SectionProps) {
 /* ─── 2. RESEARCH (List View) ─── */
 export function ResearchSection({ data, theme, accent }: SectionProps) {
     const items = data as Research[];
+    const [showAll, setShowAll] = React.useState(false);
+    const visibleItems = showAll ? items : items.slice(0, 6);
+
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {items.map((item, i) => (
+            {visibleItems.map((item, i) => (
                 <motion.div key={i} variants={fadeUp} style={{ ...glassCardStyle(theme), display: "flex", flexDirection: "column", gap: "8px" }} className="glass-card-hover">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
                         <div>
@@ -95,6 +110,13 @@ export function ResearchSection({ data, theme, accent }: SectionProps) {
                     )}
                 </motion.div>
             ))}
+            {items.length > 6 && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "12px" }}>
+                    <button onClick={() => setShowAll(!showAll)} style={{ background: "transparent", border: `1px solid ${accent}`, color: accent, padding: "10px 24px", borderRadius: "100px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = `${accent}10`} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {showAll ? "Show Less" : `Show All (${items.length})`}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -102,9 +124,12 @@ export function ResearchSection({ data, theme, accent }: SectionProps) {
 /* ─── 3. ENTREPRENEURSHIP (Featured Cards) ─── */
 export function EntrepreneurshipSection({ data, theme, accent, accent2 }: SectionProps) {
     const items = data as Entrepreneurship[];
+    const [showAll, setShowAll] = React.useState(false);
+    const visibleItems = showAll ? items : items.slice(0, 6);
+
     return (
-        <div style={{ display: "grid", gap: "24px" }}>
-            {items.map((item, i) => (
+        <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))" }}>
+            {visibleItems.map((item, i) => (
                 <motion.div key={i} variants={fadeUp} style={glassCardStyle(theme)} className="glass-card-hover">
                     <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
                         <div style={{ width: 48, height: 48, borderRadius: "12px", background: `linear-gradient(135deg, ${accent}, ${accent2})`, display: "flex", alignItems: "center", justifyContent: "center", color: "white" }}>
@@ -122,6 +147,13 @@ export function EntrepreneurshipSection({ data, theme, accent, accent2 }: Sectio
                     </div>
                 </motion.div>
             ))}
+            {items.length > 6 && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "32px", gridColumn: "1 / -1" }}>
+                    <button onClick={() => setShowAll(!showAll)} style={{ background: "transparent", border: `1px solid ${accent}`, color: accent, padding: "10px 24px", borderRadius: "100px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = `${accent}10`} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {showAll ? "Show Less" : `Show All (${items.length})`}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
@@ -129,9 +161,12 @@ export function EntrepreneurshipSection({ data, theme, accent, accent2 }: Sectio
 /* ─── 4. CERTIFICATIONS (Compact Grid) ─── */
 export function CertificationSection({ data, theme, accent }: SectionProps) {
     const items = data as Certification[];
+    const [showAll, setShowAll] = React.useState(false);
+    const visibleItems = showAll ? items : items.slice(0, 6);
+
     return (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
-            {items.map((item, i) => (
+            {visibleItems.map((item, i) => (
                 <motion.div key={i} variants={fadeUp} style={{ ...glassCardStyle(theme), padding: "20px" }} className="glass-card-hover">
                     <div style={{ marginBottom: "12px", color: accent }}>
                         <Award size={24} />
@@ -146,6 +181,13 @@ export function CertificationSection({ data, theme, accent }: SectionProps) {
                     </div>
                 </motion.div>
             ))}
+            {items.length > 6 && (
+                <div style={{ display: "flex", justifyContent: "center", marginTop: "32px", gridColumn: "1 / -1" }}>
+                    <button onClick={() => setShowAll(!showAll)} style={{ background: "transparent", border: `1px solid ${accent}`, color: accent, padding: "10px 24px", borderRadius: "100px", fontWeight: 600, cursor: "pointer", transition: "all 0.2s" }} onMouseEnter={e => e.currentTarget.style.background = `${accent}10`} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                        {showAll ? "Show Less" : `Show All (${items.length})`}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

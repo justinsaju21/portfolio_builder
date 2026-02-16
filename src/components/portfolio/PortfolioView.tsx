@@ -96,6 +96,8 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
     // Backward compatibility: If no theme ID (old profiles), it might fall back to dark logic
     // but the dashboard rewrite ensures new saves have IDs.
 
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
     // Resolved Theme Colors
     // Resolved Theme Colors
     const accent = profile.primary_color || themeBase.textDim;
@@ -348,13 +350,147 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
             <header style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, padding: "16px 24px", background: "transparent" }}>
                 <div style={{ maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 24px", borderRadius: "100px", background: theme.navBg, backdropFilter: "blur(20px)", border: `1px solid ${theme.glassBorder}` }}>
                     <h3 style={{ fontSize: "1.1rem", fontWeight: 800, background: `linear-gradient(135deg, ${accent}, ${accent2})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{profile.full_name?.split(" ")[0] || "Portfolio"}</h3>
-                    <div style={{ display: "flex", gap: "20px" }}>
-                        {navLinks.map(l => (
-                            <button key={l.id} onClick={() => document.getElementById(l.id)?.scrollIntoView({ behavior: "smooth" })} style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600 }}>{l.label}</button>
-                        ))}
+
+                    {/* Desktop Nav */}
+                    <div className="desktop-nav" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                        {/* Direct Links */}
+                        {["about", "experience", "projects", "skills"].map(id => {
+                            if (hiddenSections.includes(id)) return null;
+                            if (id === "skills" && !skills.length) return null;
+                            if (id === "experience" && !experiences.length) return null;
+                            if (id === "projects" && !projects.length) return null;
+                            return (
+                                <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}
+                                    style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", transition: "background 0.2s" }}
+                                    onMouseEnter={e => e.currentTarget.style.background = `${accent}15`}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                >
+                                    {id.charAt(0).toUpperCase() + id.slice(1)}
+                                </button>
+                            );
+                        })}
+
+                        {/* Dropdown Groups */}
+                        {/* Academic Group */}
+                        {(education.length > 0 || data.research?.length > 0 || data.certifications?.length > 0 || data.scholarships?.length > 0) && (
+                            <div style={{ position: "relative" }} className="group">
+                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
+                                    Academic <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
+                                </button>
+                                <div className="dropdown-menu" style={{
+                                    position: "absolute", top: "100%", right: 0, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
+                                }}>
+                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+                                        {education.length > 0 && <button onClick={() => document.getElementById("education")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Education</button>}
+                                        {data.research?.length > 0 && <button onClick={() => document.getElementById("research")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Research</button>}
+                                        {data.certifications?.length > 0 && <button onClick={() => document.getElementById("certifications")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Certifications</button>}
+                                        {data.scholarships?.length > 0 && <button onClick={() => document.getElementById("scholarships")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Scholarships</button>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Achievements Group */}
+                        {(data.hackathons?.length > 0 || data.entrepreneurship?.length > 0 || data.exams?.length > 0 || data.sports_cultural?.length > 0) && (
+                            <div style={{ position: "relative" }} className="group">
+                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
+                                    Achievements <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
+                                </button>
+                                <div className="dropdown-menu" style={{
+                                    position: "absolute", top: "100%", right: 0, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
+                                }}>
+                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+                                        {data.hackathons?.length > 0 && <button onClick={() => document.getElementById("hackathons")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Hackathons</button>}
+                                        {data.entrepreneurship?.length > 0 && <button onClick={() => document.getElementById("entrepreneurship")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Ventures</button>}
+                                        {data.exams?.length > 0 && <button onClick={() => document.getElementById("exams")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Exams</button>}
+                                        {data.sports_cultural?.length > 0 && <button onClick={() => document.getElementById("sports_cultural")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Sports & Cultural</button>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Leadership Group */}
+                        {(leadership.length > 0 || data.volunteering?.length > 0 || data.club_activities?.length > 0 || data.professional_memberships?.length > 0) && (
+                            <div style={{ position: "relative" }} className="group">
+                                <button style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "0.85rem", fontWeight: 600, padding: "8px 12px", borderRadius: "8px", display: "flex", alignItems: "center", gap: 4 }}>
+                                    Leadership <span style={{ fontSize: "0.7rem", opacity: 0.7 }}>▼</span>
+                                </button>
+                                <div className="dropdown-menu" style={{
+                                    position: "absolute", top: "100%", right: -20, paddingTop: 12, display: "none", flexDirection: "column", minWidth: 160
+                                }}>
+                                    <div style={{ background: theme.cardBg, borderRadius: 12, border: `1px solid ${theme.glassBorder}`, overflow: "hidden", padding: 4, boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+                                        {leadership.length > 0 && <button onClick={() => document.getElementById("leadership")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Leadership</button>}
+                                        {data.club_activities?.length > 0 && <button onClick={() => document.getElementById("club_activities")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Clubs</button>}
+                                        {data.volunteering?.length > 0 && <button onClick={() => document.getElementById("volunteering")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Volunteering</button>}
+                                        {data.professional_memberships?.length > 0 && <button onClick={() => document.getElementById("professional_memberships")?.scrollIntoView({ behavior: "smooth" })} style={{ width: "100%", textAlign: "left", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", color: theme.textMuted, fontSize: "0.85rem", fontWeight: 500, borderRadius: 8 }} onMouseEnter={e => { e.currentTarget.style.background = `${accent}10`; e.currentTarget.style.color = theme.textPrimary }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = theme.textMuted }}>Memberships</button>}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })} style={{ background: accent, border: "none", cursor: "pointer", color: "white", fontSize: "0.85rem", fontWeight: 600, padding: "8px 18px", borderRadius: "100px", marginLeft: 8 }}>Contact</button>
                     </div>
+
+                    {/* Mobile Menu Toggle */}
+                    <button className="mobile-only-btn" style={{ display: "none", background: "none", border: "none", color: theme.textPrimary, cursor: "pointer" }} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                        {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                 </div>
             </header>
+
+            {/* Mobile Menu Overlay */}
+            <AnimatePresence>
+                {mobileMenuOpen && (
+                    <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+                        style={{ position: "fixed", inset: 0, zIndex: 49, background: theme.bg, paddingTop: "100px", paddingInline: "24px", overflowY: "auto" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                            {["about", "experience", "projects", "skills"].map(id => {
+                                if (hiddenSections.includes(id)) return null;
+                                if (id === "skills" && !skills.length) return null;
+                                return (
+                                    <button key={id} onClick={() => { setMobileMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }}
+                                        style={{ background: "none", border: "none", cursor: "pointer", color: theme.textPrimary, fontSize: "1.5rem", fontWeight: 700, textAlign: "left" }}>
+                                        {id.charAt(0).toUpperCase() + id.slice(1)}
+                                    </button>
+                                );
+                            })}
+
+                            {/* Academic Group Mobile */}
+                            {(education.length > 0 || data.research?.length > 0) && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Academic</h4>
+                                    {education.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("education")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Education</button>}
+                                    {data.research?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("research")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Research</button>}
+                                    {data.certifications?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("certifications")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Certifications</button>}
+                                </div>
+                            )}
+
+                            {/* Achievements Group Mobile */}
+                            {(data.hackathons?.length > 0 || data.entrepreneurship?.length > 0) && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Achievements</h4>
+                                    {data.hackathons?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("hackathons")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Hackathons</button>}
+                                    {data.entrepreneurship?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("entrepreneurship")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Ventures</button>}
+                                </div>
+                            )}
+
+                            {/* Leadership Group Mobile */}
+                            {(leadership.length > 0 || data.volunteering?.length > 0) && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    <h4 style={{ color: accent, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: 2 }}>Leadership</h4>
+                                    {leadership.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("leadership")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Leadership</button>}
+                                    {data.volunteering?.length > 0 && <button onClick={() => { setMobileMenuOpen(false); document.getElementById("volunteering")?.scrollIntoView({ behavior: "smooth" }) }} style={{ background: "none", border: "none", color: theme.textMuted, fontSize: "1.2rem", textAlign: "left" }}>Volunteering</button>}
+                                </div>
+                            )}
+
+                            <button onClick={() => { setMobileMenuOpen(false); document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" }); }}
+                                style={{ background: accent, border: "none", cursor: "pointer", color: "white", fontSize: "1.2rem", fontWeight: 700, padding: "16px", borderRadius: "12px", marginTop: 20 }}>
+                                Contact Me
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Hero */}
             <section style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", position: "relative", padding: "120px 24px" }}>
