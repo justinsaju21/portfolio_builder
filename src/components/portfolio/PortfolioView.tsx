@@ -83,7 +83,7 @@ const SectionWrapper = ({ id, label, title, children, accent, dividerStyle }: an
 
 /* ─── Main Component ─── */
 export function PortfolioView({ data }: { data: PortfolioData }) {
-    const { profile, experiences, projects, skills, education, leadership, customSections, sectionOrder, hiddenSections } = data;
+    const { profile, experience, projects, skills, education, leadership, customSections, sectionOrder, hiddenSections } = data;
     const profileImg = getImageUrl(profile.profile_image);
 
     // Theme Resolution
@@ -187,10 +187,10 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                 </div>
             </SectionWrapper>
         ) : null,
-        experience: () => experiences.length ? (
+        experience: () => experience.length ? (
             <SectionWrapper id="experience" label="Experience" title="Where I've Worked" accent={accent} dividerStyle={divider}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "24px" }}>
-                    {experiences.map((exp, i) => (
+                    {experience.map((exp, i) => (
                         <motion.div key={i} variants={fadeUp} style={{ ...cardStyle, padding: "28px" }}>
                             <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: theme.textPrimary }}>{exp.title}</h3>
                             <div style={{ display: "flex", gap: "10px", marginTop: "4px", fontSize: "0.9rem", color: accent2 }}>
@@ -358,7 +358,7 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                         {["about", "experience", "projects", "skills"].map(id => {
                             if (hiddenSections.includes(id)) return null;
                             if (id === "skills" && !skills.length) return null;
-                            if (id === "experience" && !experiences.length) return null;
+                            if (id === "experience" && !experience.length) return null;
                             if (id === "projects" && !projects.length) return null;
                             return (
                                 <button key={id} onClick={() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" })}

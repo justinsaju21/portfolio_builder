@@ -549,7 +549,7 @@ export const getPortfolioData = cache(async (
 
     return {
         profile,
-        experiences,
+        experience: experiences,
         projects,
         skills,
         education,

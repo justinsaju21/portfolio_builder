@@ -241,7 +241,7 @@ export type Reference = z.infer<typeof ReferenceSchema>;
 
 export interface PortfolioData {
     profile: UserProfile;
-    experiences: Experience[];
+    experience: Experience[];
     projects: Project[];
     skills: Skill[];
     education: Education[];
