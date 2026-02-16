@@ -41,12 +41,12 @@ const GOOGLE_SHEET_ID = process.env.GOOGLE_SHEET_ID;
 // Tab/Sheet names in your Google Sheet
 const SHEET_NAMES = {
     USERS: "Users",
+    // Legacy sheet names, kept for compatibility in function signatures
     EXPERIENCE: "Experience",
     PROJECTS: "Projects",
     SKILLS: "Skills",
     EDUCATION: "Education",
     LEADERSHIP: "Leadership",
-    // New Sections
     HACKATHONS: "Hackathons",
     RESEARCH: "Research",
     ENTREPRENEURSHIP: "Entrepreneurship",
@@ -164,6 +164,7 @@ export const getUserByUsername = cache(async (
                 status_badge: userRow.get("status_badge") || "none",
                 timeline_view: userRow.get("timeline_view")?.toLowerCase() === "true",
                 github_fetching: userRow.get("github_fetching")?.toLowerCase() === "true",
+                portfolio_json: userRow.get("portfolio_json") || "{}",
             };
 
             // Validate with Zod
@@ -222,207 +223,13 @@ async function fetchSectionData<T>(
     return [];
 }
 
-/**
- * Get all experiences for a user
- */
-export const getExperiencesByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.EXPERIENCE, username, ExperienceSchema, (row) => ({
-        username: row.get("username") || "",
-        title: row.get("title") || "",
-        company: row.get("company") || "",
-        location: row.get("location") || "",
-        start_date: row.get("start_date") || "",
-        end_date: row.get("end_date") || "",
-        is_current: row.get("is_current")?.toLowerCase() === "true",
-        description_points: parseList(row.get("description_points")),
-        type: row.get("type") || "job",
-    }));
-});
-
-/**
- * Get all projects for a user
- */
-export const getProjectsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.PROJECTS, username, ProjectSchema, (row) => ({
-        username: row.get("username") || "",
-        title: row.get("title") || "",
-        description: row.get("description") || "",
-        tech_stack: parseList(row.get("tech_stack")),
-        repo_url: row.get("repo_url") || "",
-        live_url: row.get("live_url") || "",
-        image_url: row.get("image_url") || "",
-        featured: row.get("featured")?.toLowerCase() === "true",
-    }));
-});
-
-/**
- * Get all skills for a user
- */
-export const getSkillsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.SKILLS, username, SkillSchema, (row) => ({
-        username: row.get("username") || "",
-        category: row.get("category") || "",
-        skills_list: parseList(row.get("skills_list")),
-    }));
-});
-
-/**
- * Get all education for a user
- */
-export const getEducationByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.EDUCATION, username, EducationSchema, (row) => ({
-        username: row.get("username") || "",
-        degree: row.get("degree") || "",
-        field: row.get("field") || "",
-        institution: row.get("institution") || "",
-        year: String(row.get("year") || ""),
-        is_current: row.get("is_current")?.toLowerCase() === "true",
-    }));
-});
-
-/**
- * Get all leadership roles for a user
- */
-export const getLeadershipByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.LEADERSHIP, username, LeadershipSchema, (row) => ({
-        username: row.get("username") || "",
-        title: row.get("title") || "",
-        organization: row.get("organization") || "",
-        description: row.get("description") || "",
-        achievements: parseList(row.get("achievements")),
-        type: row.get("type") || "club",
-    }));
-});
-
-// ===== NEW FETCHERS =====
-
-export const getHackathonsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.HACKATHONS, username, HackathonSchema, (row) => ({
-        username: row.get("username") || "",
-        name: row.get("name") || "",
-        project_built: row.get("project_built") || "",
-        team_size: String(row.get("team_size") || "1"),
-        position: row.get("position") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getResearchByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.RESEARCH, username, ResearchSchema, (row) => ({
-        username: row.get("username") || "",
-        title: row.get("title") || "",
-        journal_conference: row.get("journal_conference") || "",
-        index_status: row.get("index_status") || "none",
-        publication_status: row.get("publication_status") || "under_review",
-        link: row.get("link") || "",
-    }));
-});
-
-export const getEntrepreneurshipByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.ENTREPRENEURSHIP, username, EntrepreneurshipSchema, (row) => ({
-        username: row.get("username") || "",
-        startup_name: row.get("startup_name") || "",
-        registration_details: row.get("registration_details") || "",
-        revenue_funding: row.get("revenue_funding") || "",
-        description: row.get("description") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getCertificationsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.CERTIFICATIONS, username, CertificationSchema, (row) => ({
-        username: row.get("username") || "",
-        provider: row.get("provider") || "",
-        certificate_name: row.get("certificate_name") || "",
-        validation_id: row.get("validation_id") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getExamsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.EXAMS, username, ExamSchema, (row) => ({
-        username: row.get("username") || "",
-        exam_name: row.get("exam_name") || "",
-        score_rank: row.get("score_rank") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getSportsCulturalByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.SPORTS_CULTURAL, username, SportsCulturalSchema, (row) => ({
-        username: row.get("username") || "",
-        event_name: row.get("event_name") || "",
-        level: row.get("level") || "zone",
-        position_won: row.get("position_won") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getVolunteeringByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.VOLUNTEERING, username, VolunteeringSchema, (row) => ({
-        username: row.get("username") || "",
-        organization: row.get("organization") || "",
-        role: row.get("role") || "",
-        hours_served: String(row.get("hours_served") || ""),
-        impact: row.get("impact") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getScholarshipsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.SCHOLARSHIPS, username, ScholarshipSchema, (row) => ({
-        username: row.get("username") || "",
-        name: row.get("name") || "",
-        awarding_body: row.get("awarding_body") || "",
-        amount_prestige: row.get("amount_prestige") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getClubActivitiesByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.CLUB_ACTIVITIES, username, ClubActivitySchema, (row) => ({
-        username: row.get("username") || "",
-        club_name: row.get("club_name") || "",
-        position: row.get("position") || "",
-        key_events: row.get("key_events") || "",
-        impact_description: row.get("impact_description") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getDeptContributionsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.DEPT_CONTRIBUTIONS, username, DeptContributionSchema, (row) => ({
-        username: row.get("username") || "",
-        event_name: row.get("event_name") || "",
-        role: row.get("role") || "",
-        contribution_description: row.get("contribution_description") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getProfessionalMembershipsByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS, username, ProfessionalMembershipSchema, (row) => ({
-        username: row.get("username") || "",
-        organization: row.get("organization") || "",
-        membership_id: row.get("membership_id") || "",
-        role: row.get("role") || "",
-        proof_link: row.get("proof_link") || "",
-    }));
-});
-
-export const getReferencesByUsername = cache(async (username: string) => {
-    return fetchSectionData(SHEET_NAMES.REFERENCES, username, ReferenceSchema, (row) => ({
-        username: row.get("username") || "",
-        faculty_name: row.get("faculty_name") || "",
-        contact: row.get("contact") || "",
-        lor_link: row.get("lor_link") || "",
-    }));
-});
+// Obsolete fetchers - removed to favor Single-Sheet JSON storage
+// get[Section]ByUsername functions are no longer needed as getPortfolioData handles everything.
 
 
 /**
  * Get complete portfolio data for a user
- * Fully memoized to ensure multiple calls in the same request (metadata + page) are free
+ * In Single-Sheet mode, we fetch the User row and parse the portfolio_json column.
  */
 export const getPortfolioData = cache(async (
     username: string
@@ -430,82 +237,43 @@ export const getPortfolioData = cache(async (
     const profile = await getUserByUsername(username);
     if (!profile) return null;
 
-    const [
-        experiences, projects, skills, education, leadership,
-        hackathons, research, entrepreneurship, certifications, exams,
-        sports_cultural, volunteering, scholarships, club_activities,
-        dept_contributions, professional_memberships, references
-    ] = await Promise.all([
-        getExperiencesByUsername(username),
-        getProjectsByUsername(username),
-        getSkillsByUsername(username),
-        getEducationByUsername(username),
-        getLeadershipByUsername(username),
-        // New sections
-        getHackathonsByUsername(username),
-        getResearchByUsername(username),
-        getEntrepreneurshipByUsername(username),
-        getCertificationsByUsername(username),
-        getExamsByUsername(username),
-        getSportsCulturalByUsername(username),
-        getVolunteeringByUsername(username),
-        getScholarshipsByUsername(username),
-        getClubActivitiesByUsername(username),
-        getDeptContributionsByUsername(username),
-        getProfessionalMembershipsByUsername(username),
-        getReferencesByUsername(username),
-    ]);
-
-    // Parse custom sections from JSON string
-    const customSections: CustomSection[] = [];
+    let data: Partial<PortfolioData> = {};
     try {
-        const parsed = JSON.parse(profile.custom_sections || "[]");
-        if (Array.isArray(parsed)) {
-            for (const s of parsed) {
-                const result = CustomSectionSchema.safeParse(s);
-                if (result.success) {
-                    customSections.push(result.data);
-                }
-            }
+        const jsonStr = (profile as any).portfolio_json;
+        if (jsonStr && jsonStr !== "{}") {
+            data = JSON.parse(jsonStr);
         }
-    } catch { /* ignore parse errors */ }
+    } catch (e) {
+        console.error(`Error parsing portfolio_json for ${username}:`, e);
+    }
 
-    // Parse section order
-    const sectionOrder = (profile.section_order || "about,skills,experience,projects,leadership,education,contact")
-        .split(",")
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-
-    // Parse hidden sections
-    const hiddenSections = (profile.section_visibility || "")
-        .split(",")
-        .map((s: string) => s.trim())
-        .filter(Boolean);
-
-    return {
+    // Merge profile values (some fields like theme are in both, profile row wins for auth fields)
+    const portfolio: PortfolioData = {
         profile,
-        experience: experiences,
-        projects,
-        skills,
-        education,
-        leadership,
-        customSections,
-        sectionOrder,
-        hiddenSections,
-        // New sections
-        hackathons,
-        research,
-        entrepreneurship,
-        certifications,
-        exams,
-        sports_cultural,
-        volunteering,
-        scholarships,
-        club_activities,
-        dept_contributions,
-        professional_memberships,
-        references,
+        experience: data.experience || [],
+        projects: data.projects || [],
+        skills: data.skills || [],
+        education: data.education || [],
+        leadership: data.leadership || [],
+        customSections: data.customSections || [],
+        sectionOrder: data.sectionOrder || (profile.section_order || "about,skills,experience,projects,leadership,education,contact").split(",").map(s => s.trim()).filter(Boolean),
+        hiddenSections: data.hiddenSections || (profile.section_visibility || "").split(",").map(s => s.trim()).filter(Boolean),
+        // Additional sections
+        hackathons: data.hackathons || [],
+        research: data.research || [],
+        entrepreneurship: data.entrepreneurship || [],
+        certifications: data.certifications || [],
+        exams: data.exams || [],
+        sports_cultural: data.sports_cultural || [],
+        volunteering: data.volunteering || [],
+        scholarships: data.scholarships || [],
+        club_activities: data.club_activities || [],
+        dept_contributions: data.dept_contributions || [],
+        professional_memberships: data.professional_memberships || [],
+        references: data.references || [],
     };
+
+    return portfolio;
 });
 
 /**
@@ -638,157 +406,95 @@ export async function createUser(profile: UserProfile): Promise<boolean> {
             status_badge: profile.status_badge || "none",
             timeline_view: profile.timeline_view ? "true" : "false",
             github_fetching: profile.github_fetching ? "true" : "false",
+            portfolio_json: "{}",
         });
 
         return true;
     } catch (error) {
-        console.error("Error creating user:", error);
+        console.error("Error creating user DETAILS:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
         return false;
     }
 }
 
 /**
- * Add a row to a specific section sheet with retry logic
+ * Add an item to a specific section with JSON storage
  */
 export async function addSectionRow(
-    sheetName: string,
+    sectionKey: string,
     data: Record<string, unknown>,
     retries = 3
 ): Promise<boolean> {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const doc = await getSpreadsheet();
-            const sheet = doc.sheetsByTitle[sheetName];
+    const username = data.username as string;
+    if (!username) return false;
 
-            if (!sheet) {
-                console.error(`Sheet "${sheetName}" not found in spreadsheet.`);
-                // If it's missing, maybe we should try ensuring sheets exist again?
-                // But only if we haven't already.
-                await ensureSheetsExist("retry"); // Pass something to indicate it's a retry check
-                const sheetRetry = doc.sheetsByTitle[sheetName];
-                if (!sheetRetry) return false;
-            }
+    return updatePortfolioJSON(username, (portfolio) => {
+        const key = sectionKey.toLowerCase() as keyof PortfolioData;
+        const currentItems = (portfolio[key] || []) as any[];
 
-            const sheetToUse = doc.sheetsByTitle[sheetName];
+        // Remove username from item data before storing in JSON (redundant inside the blob)
+        const { username: _, ...itemData } = data;
 
-            // Convert arrays to pipe-separated strings for Google Sheets
-            const rowData: Record<string, string> = {};
-            for (const [key, value] of Object.entries(data)) {
-                if (Array.isArray(value)) {
-                    rowData[key] = value.join(" | ");
-                } else if (typeof value === "boolean") {
-                    rowData[key] = value ? "true" : "false";
-                } else {
-                    rowData[key] = String(value ?? "");
-                }
-            }
-
-            await sheetToUse.addRow(rowData);
-            return true;
-        } catch (error) {
-            console.warn(`Attempt ${i + 1} failed adding row to ${sheetName}. Error:`, error);
-            if (i === retries - 1) {
-                console.error(`Final failure adding row to ${sheetName} after ${retries} attempts:`, error);
-                return false;
-            }
-            // Increase initial delay to 1s and use steeper backoff
-            await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, i)));
-        }
-    }
-    return false;
+        return {
+            ...portfolio,
+            [key]: [...currentItems, itemData]
+        };
+    }, retries);
 }
 
 /**
- * Update a specific row in a section sheet by index
+ * Update a specific item in a section by index
  */
 export async function updateSectionRow(
-    sheetName: string,
+    sectionKey: string,
     username: string,
     index: number,
     data: Record<string, unknown>,
     retries = 3
 ): Promise<boolean> {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const doc = await getSpreadsheet();
-            const sheet = doc.sheetsByTitle[sheetName];
-            if (!sheet) {
-                console.error(`Sheet "${sheetName}" not found for update.`);
-                return false;
-            }
+    return updatePortfolioJSON(username, (portfolio) => {
+        const key = sectionKey.toLowerCase() as keyof PortfolioData;
+        const currentItems = [...((portfolio[key] || []) as any[])];
 
-            const rows = await sheet.getRows();
-            const userRows = rows.filter(
-                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
-            );
-
-            if (index < 0 || index >= userRows.length) {
-                console.error(`Index ${index} out of bounds for user ${username} in ${sheetName}. Found ${userRows.length} rows.`);
-                return false;
-            }
-
-            const rowToUpdate = userRows[index];
-
-            // Convert data to row format
-            for (const [key, value] of Object.entries(data)) {
-                if (Array.isArray(value)) {
-                    rowToUpdate.set(key, value.join(" | "));
-                } else if (typeof value === "boolean") {
-                    rowToUpdate.set(key, value ? "true" : "false");
-                } else {
-                    rowToUpdate.set(key, String(value ?? ""));
-                }
-            }
-
-            await rowToUpdate.save();
-            return true;
-        } catch (error) {
-            console.warn(`Attempt ${i + 1} failed updating row in ${sheetName}. Error:`, error);
-            if (i === retries - 1) {
-                console.error(`Final failure updating row in ${sheetName} after ${retries} attempts:`, error);
-                return false;
-            }
-            await new Promise((res) => setTimeout(res, 1000 * Math.pow(2, i)));
+        if (index < 0 || index >= currentItems.length) {
+            console.error(`Index ${index} out of bounds for ${sectionKey}`);
+            return portfolio;
         }
-    }
-    return false;
+
+        const { username: _, ...itemData } = data;
+        currentItems[index] = itemData;
+
+        return {
+            ...portfolio,
+            [key]: currentItems
+        };
+    }, retries);
 }
 
 /**
- * Delete a user's row from a section sheet by matching index with retry logic
- * (index = nth row belonging to this username, 0-based)
+ * Delete a specific item from a section by index
  */
 export async function deleteSectionRow(
-    sheetName: string,
+    sectionKey: string,
     username: string,
-    rowIndex: number,
+    index: number,
     retries = 3
 ): Promise<boolean> {
-    for (let i = 0; i < retries; i++) {
-        try {
-            const doc = await getSpreadsheet();
-            const sheet = doc.sheetsByTitle[sheetName];
-            if (!sheet) return false;
+    return updatePortfolioJSON(username, (portfolio) => {
+        const key = sectionKey.toLowerCase() as keyof PortfolioData;
+        const currentItems = [...((portfolio[key] || []) as any[])];
 
-            const rows = await sheet.getRows();
-            const userRows = rows.filter(
-                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
-            );
-
-            if (rowIndex < 0 || rowIndex >= userRows.length) return false;
-
-            await userRows[rowIndex].delete();
-            return true;
-        } catch (error) {
-            console.warn(`Attempt ${i + 1} failed deleting row from ${sheetName}:`, error);
-            if (i === retries - 1) {
-                console.error(`Final failure deleting row from ${sheetName}:`, error);
-                return false;
-            }
-            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+        if (index < 0 || index >= currentItems.length) {
+            console.error(`Index ${index} out of bounds for ${sectionKey}`);
+            return portfolio;
         }
-    }
-    return false;
+
+        currentItems.splice(index, 1);
+
+        return {
+            ...portfolio,
+            [key]: currentItems
+        };
+    }, retries);
 }
 
 /**
@@ -796,25 +502,99 @@ export async function deleteSectionRow(
  */
 export function getSectionSheetName(section: string): string | null {
     const map: Record<string, string> = {
-        experience: SHEET_NAMES.EXPERIENCE,
-        projects: SHEET_NAMES.PROJECTS,
-        skills: SHEET_NAMES.SKILLS,
-        education: SHEET_NAMES.EDUCATION,
-        leadership: SHEET_NAMES.LEADERSHIP,
-        hackathons: SHEET_NAMES.HACKATHONS,
-        research: SHEET_NAMES.RESEARCH,
-        entrepreneurship: SHEET_NAMES.ENTREPRENEURSHIP,
-        certifications: SHEET_NAMES.CERTIFICATIONS,
-        exams: SHEET_NAMES.EXAMS,
-        sports_cultural: SHEET_NAMES.SPORTS_CULTURAL,
-        volunteering: SHEET_NAMES.VOLUNTEERING,
-        scholarships: SHEET_NAMES.SCHOLARSHIPS,
-        club_activities: SHEET_NAMES.CLUB_ACTIVITIES,
-        dept_contributions: SHEET_NAMES.DEPT_CONTRIBUTIONS,
-        professional_memberships: SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS,
-        references: SHEET_NAMES.REFERENCES,
+        experience: "experience",
+        projects: "projects",
+        skills: "skills",
+        education: "education",
+        leadership: "leadership",
+        hackathons: "hackathons",
+        research: "research",
+        entrepreneurship: "entrepreneurship",
+        certifications: "certifications",
+        exams: "exams",
+        sports_cultural: "sports_cultural",
+        volunteering: "volunteering",
+        scholarships: "scholarships",
+        club_activities: "club_activities",
+        dept_contributions: "dept_contributions",
+        professional_memberships: "professional_memberships",
+        references: "references",
     };
     return map[section] || null;
+}
+
+/**
+ * Helper to update the portfolio_json column for a user
+ */
+async function updatePortfolioJSON(
+    username: string,
+    updateFn: (data: PortfolioData) => PortfolioData,
+    retries = 3
+): Promise<boolean> {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const doc = await getSpreadsheet();
+            const sheet = doc.sheetsByTitle[SHEET_NAMES.USERS];
+            if (!sheet) return false;
+
+            await sheet.loadHeaderRow();
+            const rows = await sheet.getRows();
+            const userRow = rows.find(
+                (row) => row.get("username")?.toLowerCase() === username.toLowerCase()
+            );
+
+            if (!userRow) return false;
+
+            // Get current data
+            let currentJSON = userRow.get("portfolio_json") || "{}";
+            let parsedData: Partial<PortfolioData> = {};
+            try {
+                parsedData = JSON.parse(currentJSON);
+            } catch (e) {
+                console.error("Error parsing portfolio_json during update:", e);
+                parsedData = {};
+            }
+
+            // Construct valid PortfolioData object for the updateFn
+            const fullData: PortfolioData = {
+                profile: {} as UserProfile, // Not used by updateFn usually
+                experience: parsedData.experience || [],
+                projects: parsedData.projects || [],
+                skills: parsedData.skills || [],
+                education: parsedData.education || [],
+                leadership: parsedData.leadership || [],
+                customSections: parsedData.customSections || [],
+                sectionOrder: parsedData.sectionOrder || [],
+                hiddenSections: parsedData.hiddenSections || [],
+                hackathons: parsedData.hackathons || [],
+                research: parsedData.research || [],
+                entrepreneurship: parsedData.entrepreneurship || [],
+                certifications: parsedData.certifications || [],
+                exams: parsedData.exams || [],
+                sports_cultural: parsedData.sports_cultural || [],
+                volunteering: parsedData.volunteering || [],
+                scholarships: parsedData.scholarships || [],
+                club_activities: parsedData.club_activities || [],
+                dept_contributions: parsedData.dept_contributions || [],
+                professional_memberships: parsedData.professional_memberships || [],
+                references: parsedData.references || [],
+            };
+
+            const updatedData = updateFn(fullData);
+
+            // Remove the 'profile' field before stringifying to keep blob cleaner
+            const { profile: _, ...blobData } = updatedData;
+
+            userRow.set("portfolio_json", JSON.stringify(blobData));
+            await userRow.save();
+            return true;
+        } catch (error) {
+            console.error(`Attempt ${i + 1} failed updating portfolio JSON:`, error);
+            if (i === retries - 1) return false;
+            await new Promise((res) => setTimeout(res, 500 * Math.pow(2, i)));
+        }
+    }
+    return false;
 }
 
 // Promise to track the ongoing initialization to handle concurrent requests
@@ -841,25 +621,8 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
                     "section_order", "section_visibility", "custom_sections", "bg_color", "surface_color",
                     "text_primary", "text_muted", "text_dim", "heading_font", "body_font", "button_style",
                     "container_width", "custom_css", "color_theme", "rss_url", "google_analytics_id",
-                    "status_badge", "timeline_view", "github_fetching"
+                    "status_badge", "timeline_view", "github_fetching", "portfolio_json"
                 ],
-                [SHEET_NAMES.EXPERIENCE]: ["username", "title", "company", "location", "start_date", "end_date", "is_current", "description_points", "type"],
-                [SHEET_NAMES.PROJECTS]: ["username", "title", "description", "tech_stack", "repo_url", "live_url", "image_url", "featured"],
-                [SHEET_NAMES.SKILLS]: ["username", "category", "skills_list"],
-                [SHEET_NAMES.EDUCATION]: ["username", "degree", "field", "institution", "year", "is_current"],
-                [SHEET_NAMES.LEADERSHIP]: ["username", "title", "organization", "description", "achievements", "type"],
-                [SHEET_NAMES.HACKATHONS]: ["username", "name", "project_built", "team_size", "position", "proof_link"],
-                [SHEET_NAMES.RESEARCH]: ["username", "title", "journal_conference", "index_status", "publication_status", "link"],
-                [SHEET_NAMES.ENTREPRENEURSHIP]: ["username", "startup_name", "registration_details", "revenue_funding", "description", "proof_link"],
-                [SHEET_NAMES.CERTIFICATIONS]: ["username", "provider", "certificate_name", "validation_id", "proof_link"],
-                [SHEET_NAMES.EXAMS]: ["username", "exam_name", "score_rank", "proof_link"],
-                [SHEET_NAMES.SPORTS_CULTURAL]: ["username", "event_name", "level", "position_won", "proof_link"],
-                [SHEET_NAMES.VOLUNTEERING]: ["username", "organization", "role", "hours_served", "impact", "proof_link"],
-                [SHEET_NAMES.SCHOLARSHIPS]: ["username", "name", "awarding_body", "amount_prestige", "proof_link"],
-                [SHEET_NAMES.CLUB_ACTIVITIES]: ["username", "club_name", "position", "key_events", "impact_description", "proof_link"],
-                [SHEET_NAMES.DEPT_CONTRIBUTIONS]: ["username", "event_name", "role", "contribution_description", "proof_link"],
-                [SHEET_NAMES.PROFESSIONAL_MEMBERSHIPS]: ["username", "organization", "membership_id", "role", "proof_link"],
-                [SHEET_NAMES.REFERENCES]: ["username", "faculty_name", "contact", "lor_link"],
             };
 
             const checkSheet = async (title: string, headers: string[]) => {
@@ -868,12 +631,27 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
                     await doc.addSheet({ title, headerValues: headers });
                     return title;
                 } else {
-                    await sheet.loadHeaderRow();
-                    const existingHeaders = sheet.headerValues;
-                    const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
-                    if (missingHeaders.length > 0) {
-                        await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
-                        return `${title} (updated headers)`;
+                    try {
+                        await sheet.loadHeaderRow();
+                        const existingHeaders = sheet.headerValues;
+                        const missingHeaders = headers.filter(h => !existingHeaders.includes(h));
+                        if (missingHeaders.length > 0) {
+                            // Resize if needed
+                            if (sheet.columnCount < existingHeaders.length + missingHeaders.length) {
+                                await sheet.resize({ rowCount: sheet.rowCount, columnCount: existingHeaders.length + missingHeaders.length });
+                            }
+                            await sheet.setHeaderRow([...existingHeaders, ...missingHeaders]);
+                            return `${title} (updated headers)`;
+                        }
+                    } catch (e) {
+                        // Likely empty sheet (no headers)
+                        console.warn(`Sheet ${title} found but empty or invalid headers. Re-initializing headers.`);
+                        // Resize first
+                        if (sheet.columnCount < headers.length) {
+                            await sheet.resize({ rowCount: sheet.rowCount || 1000, columnCount: headers.length });
+                        }
+                        await sheet.setHeaderRow(headers);
+                        return `${title} (re-initialized headers)`;
                     }
                 }
                 return null;
@@ -886,7 +664,7 @@ export async function ensureSheetsExist(username: string): Promise<string[]> {
             console.log("Spreadsheet schema verification successful.");
             return results.filter((r): r is string => r !== null);
         } catch (error) {
-            console.error("Error during spreadsheet initialization:", error);
+            console.error("Error during spreadsheet initialization DETAILS:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
             initializationPromise = null; // Allow retry on next request
             return [];
         }
