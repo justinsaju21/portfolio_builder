@@ -35,7 +35,7 @@ export async function GET(
                     graduationYear: data.profile.graduation_year,
                 },
             },
-            experiences: data.experiences.map((exp) => ({
+            experiences: data.experience.map((exp) => ({
                 title: exp.title,
                 company: exp.company,
                 location: exp.location,

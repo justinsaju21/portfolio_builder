@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addSectionRow, deleteSectionRow, getSectionSheetName } from "@/lib/google-sheets";
+import { addSectionRow, deleteSectionRow, getSectionSheetName, ensureSheetsExist } from "@/lib/google-sheets";
 import { getAuthUsername } from "@/lib/auth";
 import {
     ExperienceSchema,
@@ -60,6 +60,9 @@ export async function POST(
 
         const body = await request.json();
         const { section, data } = body;
+
+        // Ensure database integrity (sheets + headers)
+        await ensureSheetsExist(username);
 
         if (!section || !data) {
             return NextResponse.json({ error: "section and data are required" }, { status: 400 });

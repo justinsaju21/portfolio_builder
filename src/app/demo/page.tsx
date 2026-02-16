@@ -48,7 +48,7 @@ const demoData: PortfolioData = {
         timeline_view: false,
         github_fetching: false,
     },
-    experiences: [
+    experience: [
         {
             username: "justinsaju",
             title: "SoC Testing Researcher",
