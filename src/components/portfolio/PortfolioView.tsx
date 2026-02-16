@@ -424,12 +424,48 @@ export function PortfolioView({ data }: { data: PortfolioData }) {
                 if (custom?.visible && custom.title) {
                     return (
                         <SectionWrapper key={id} id={id} title={custom.title} accent={accent} dividerStyle={divider}>
-                            {custom.type === "text" ? (
+                            {custom.type === "text" && (
                                 <div style={{ color: theme.textMuted, lineHeight: 1.7 }}>
                                     <ReactMarkdown>{custom.content}</ReactMarkdown>
                                 </div>
-                            ) : null}
-                            {/* Keep it simple for custom text for now, or expand if needed */}
+                            )}
+
+                            {custom.type === "list" && custom.items?.length > 0 && (
+                                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                                    {custom.items.map((item: any, i: number) => (
+                                        <motion.div key={i} variants={fadeUp} style={{ ...cardStyle, padding: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <div>
+                                                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: theme.textPrimary, marginBottom: "4px" }}>{typeof item === 'string' ? item : item.title}</h3>
+                                                {typeof item !== 'string' && item.description && <p style={{ fontSize: "0.9rem", color: theme.textMuted }}>{item.description}</p>}
+                                            </div>
+                                            {typeof item !== 'string' && item.url && (
+                                                <a href={item.url} target="_blank" rel="noopener" style={{ padding: "10px", borderRadius: "50%", background: `${accent}15`, color: accent, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <ExternalLink size={18} />
+                                                </a>
+                                            )}
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {custom.type === "grid" && custom.items?.length > 0 && (
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "24px" }}>
+                                    {custom.items.map((item: any, i: number) => (
+                                        <motion.div key={i} variants={fadeUp} style={{ ...cardStyle, padding: "24px" }}>
+                                            <div style={{ marginBottom: "12px", width: "40px", height: "40px", borderRadius: "10px", background: `${accent2}15`, display: "flex", alignItems: "center", justifyContent: "center", color: accent2 }}>
+                                                {ICON_MAP[custom.icon] ? React.createElement(ICON_MAP[custom.icon], { size: 20 }) : <Star size={20} />}
+                                            </div>
+                                            <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: theme.textPrimary, marginBottom: "8px" }}>{typeof item === 'string' ? item : item.title}</h3>
+                                            {typeof item !== 'string' && item.description && <p style={{ fontSize: "0.9rem", color: theme.textMuted, lineHeight: 1.6, marginBottom: "16px" }}>{item.description}</p>}
+                                            {typeof item !== 'string' && item.url && (
+                                                <a href={item.url} target="_blank" rel="noopener" style={{ fontSize: "0.85rem", color: accent, fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+                                                    View Details <ExternalLink size={14} />
+                                                </a>
+                                            )}
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            )}
                         </SectionWrapper>
                     );
                 }
